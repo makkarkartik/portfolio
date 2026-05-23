@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kartik Makkar — Senior AI/ML Engineer & Platform Architect</title>
+  <meta name="description" content="Senior AI/ML Engineer & Platform Architect with 14+ years delivering scalable production systems. Software Architect at Cisco. M.S. CS (AI), Georgia Tech." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --accent:    #1F3A93;
+      --accent-lt: #2d4fbd;
+      --accent-bg: #eef1fb;
+      --muted:     #555;
+      --border:    #dde1ef;
+      --bg:        #ffffff;
+      --surface:   #f7f8fc;
+      --text:      #1a1a2e;
+      --radius:    10px;
+      --max:       860px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    /* ── NAV ─────────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand { font-weight: 700; color: var(--accent); font-size: 15px; text-decoration: none; }
+    .nav-links { display: flex; gap: 24px; list-style: none; }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* ── HERO ────────────────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, var(--accent) 0%, #162d7a 100%);
+      color: white;
+      padding: 72px 24px 60px;
+      text-align: center;
+    }
+    header h1 { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 700; letter-spacing: -.5px; }
+    header .title {
+      font-size: clamp(1rem, 2.5vw, 1.15rem);
+      font-weight: 400;
+      opacity: .88;
+      margin-top: 8px;
+    }
+    .contact-bar {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px 24px;
+    }
+    .contact-bar a {
+      color: rgba(255,255,255,.85);
+      text-decoration: none;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color .2s;
+    }
+    .contact-bar a:hover { color: white; }
+    .contact-bar svg { width: 15px; height: 15px; fill: currentColor; flex-shrink: 0; }
+
+    .cta-buttons {
+      margin-top: 28px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 22px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all .2s;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-white {
+      background: white;
+      color: var(--accent);
+    }
+    .btn-white:hover { background: #f0f3ff; transform: translateY(-1px); }
+    .btn-outline {
+      background: transparent;
+      color: white;
+      border: 1.5px solid rgba(255,255,255,.55);
+    }
+    .btn-outline:hover { border-color: white; background: rgba(255,255,255,.1); }
+
+    /* ── MAIN LAYOUT ─────────────────────────────────────── */
+    main { max-width: var(--max); margin: 0 auto; padding: 0 24px 80px; }
+
+    section { padding-top: 52px; }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: .3px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent);
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      font-size: 13px;
+      letter-spacing: 1.2px;
+    }
+
+    /* ── SUMMARY ─────────────────────────────────────────── */
+    .summary-text { color: #222; line-height: 1.8; font-size: 15.5px; }
+    .summary-text strong { color: var(--accent); }
+
+    /* ── PROJECT / RESEARCH ──────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 26px;
+      margin-bottom: 16px;
+    }
+    .card-title { font-size: 15.5px; font-weight: 700; color: var(--text); line-height: 1.5; }
+    .card-meta {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+      margin-bottom: 14px;
+    }
+    .card-links { display: flex; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+    .card-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1.5px solid var(--border);
+      padding: 4px 12px;
+      border-radius: 20px;
+      transition: all .2s;
+    }
+    .card-link:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+    ul.bullets {
+      padding-left: 1.1em;
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    ul.bullets li { color: #333; font-size: 14.5px; line-height: 1.65; }
+    ul.bullets li::marker { color: var(--accent); }
+    ul.bullets strong { color: var(--text); }
+
+    /* ── EXPERIENCE ──────────────────────────────────────── */
+    .exp-company {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .exp-company-name { font-size: 16px; font-weight: 700; }
+    .exp-company-meta { font-size: 13px; color: var(--muted); }
+
+    .role {
+      margin-top: 16px;
+      padding-left: 16px;
+      border-left: 3px solid var(--border);
+    }
+    .role-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+    .role-title { font-size: 14.5px; font-weight: 700; color: var(--accent); }
+    .role-dates { font-size: 13px; color: var(--muted); white-space: nowrap; }
+    .role-desc {
+      font-size: 13.5px;
+      color: var(--muted);
+      font-style: italic;
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+
+    .exp-block { margin-bottom: 36px; }
+
+    /* ── SKILLS ──────────────────────────────────────────── */
+    .skill-row { margin-bottom: 14px; }
+    .skill-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      background: var(--accent-bg);
+      color: var(--accent);
+      font-size: 12.5px;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    /* ── EDUCATION ───────────────────────────────────────── */
+    .edu-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .edu-row:last-child { border-bottom: none; }
+    .edu-degree { font-weight: 700; font-size: 14.5px; }
+    .edu-school { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+    .edu-year { font-size: 13px; color: var(--accent); font-weight: 600; white-space: nowrap; }
+
+    /* ── FOOTER ──────────────────────────────────────────── */
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 28px 24px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── RESPONSIVE ──────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .nav-links { display: none; }
+      header { padding: 48px 20px 44px; }
+      .role-header { flex-direction: column; gap: 2px; }
+      .exp-company { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-brand">Kartik Makkar</a>
+    <ul class="nav-links">
+      <li><a href="#summary">Summary</a></li>
+      <li><a href="#research">Research</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#education">Education</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header>
+  <h1>Kartik Makkar</h1>
+  <p class="title">Senior AI/ML Engineer &amp; Platform Architect &nbsp;·&nbsp; San Jose, CA</p>
+
+  <div class="contact-bar">
+    <a href="mailto:kartikmakkar.in@gmail.com">
+      <svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>
+      kartikmakkar.in@gmail.com
+    </a>
+    <a href="tel:4083246029">
+      <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+      (408) 324-6029
+    </a>
+    <a href="https://linkedin.com/in/makkarkartik" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      linkedin.com/in/makkarkartik
+    </a>
+  </div>
+
+  <div class="cta-buttons">
+    <a href="Kartik_Makkar_Resume_Final.pdf" download class="btn btn-white">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+      Download Resume
+    </a>
+    <a href="https://linkedin.com/in/makkarkartik" target="_blank" rel="noopener" class="btn btn-outline">
+      View LinkedIn
+    </a>
+  </div>
+</header>
+
+<main>
+
+  <!-- SUMMARY -->
+  <section id="summary">
+    <p class="section-title">Summary</p>
+    <p class="summary-text">
+      <strong>Senior AI/ML Engineer &amp; Platform Architect</strong> — 14+ years delivering scalable production
+      systems to enterprise customers across collaboration, observability, and healthcare. Currently leads the AI
+      layer of Cisco's AssessmentX. Combines hands-on engineering depth (fine-tuning models, agentic systems,
+      retrieval) with the architect's craft of translating customer outcomes into engineering deliverables,
+      operating across engineering teams, internal stakeholders, and enterprise customer leadership.
+      <strong>M.S. Computer Science (Artificial Intelligence), Georgia Tech, Dec 2024.</strong>
+    </p>
+  </section>
+
+  <!-- RESEARCH -->
+  <section id="research">
+    <p class="section-title">Applied ML Research</p>
+    <div class="card">
+      <p class="card-title">Domain-Specialized SLM Fine-Tuning — Llama 3.2 3B QLoRA for US Community-Healthcare Q&amp;A</p>
+      <p class="card-meta">Independent Project &nbsp;·&nbsp; 2025</p>
+      <p style="font-size:14.5px; color:#333; line-height:1.7;">
+        Built an end-to-end, fully local pipeline to download, ingest, and process <strong>~3,200 publicly-available
+        Community Health Needs Assessment (CHNA) reports</strong> from US hospitals across all 50 states and
+        territories, then fine-tuned a Llama 3.2 3B Instruct base into a CHNA-domain Q&amp;A specialist answering
+        complex questions about healthcare infrastructure, resource gaps, and demographic needs.
+        <em>No proprietary APIs in data prep, training, or evaluation.</em>
+      </p>
+      <ul class="bullets">
+        <li><strong>Training architecture.</strong> LoRA rank 32 across attention + MLP; 4-bit NF4 + double-quant;
+          paged AdamW 8-bit; gradient checkpointing; NEFTune embedding noise; single consumer GPU
+          (RTX 4090, 24 GB). Synthetic Q&amp;A generated by a local Ollama teacher (Llama 3.1 8B Q4) with
+          faithfulness filtering.</li>
+        <li><strong>Hospital-level holdout splits.</strong> Train / val / test partitioned by hospital, not by row —
+          a hospital appearing in train cannot leak into eval, preventing the model from memorizing
+          near-identical annual CHNAs.</li>
+        <li><strong>Multi-metric evaluation.</strong> Perplexity, pairwise judging vs base (Qwen 2.5 7B as the
+          LLM-as-judge, different family from teacher to reduce shared bias), 1–5 rubric, ROUGE-L, and
+          faithfulness on the held-out test set. Pairwise win-rate vs base Llama 3.2 3B Instruct =
+          <strong>68%</strong> (n=300); rubric avg = <strong>4.0 / 5.0</strong> (n=500);
+          faithfulness = <strong>0.78</strong>.</li>
+      </ul>
+      <div class="card-links">
+        <a href="https://huggingface.co/" class="card-link">HuggingFace</a>
+        <a href="https://github.com/" class="card-link">GitHub</a>
+        <a href="#" class="card-link">Methodology Write-up</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section id="experience">
+    <p class="section-title">Experience</p>
+
+    <!-- Cisco -->
+    <div class="exp-block">
+      <div class="exp-company">
+        <span class="exp-company-name">Cisco Systems</span>
+        <span class="exp-company-meta">Nov 2018 – Present &nbsp;·&nbsp; San Francisco Bay Area, CA</span>
+      </div>
+      <p style="font-size:13px; color:var(--muted); margin-top:3px;">CX Healthcare · AppDynamics · CX Collaboration</p>
+
+      <div class="role">
+        <div class="role-header">
+          <span class="role-title">Software Architect — AssessmentX AI Platform</span>
+          <span class="role-dates">Nov 2024 – Present</span>
+        </div>
+        <p class="role-desc">Lead architect of AssessmentX AI — a FastAPI companion service to AssessmentX's
+        Spring-Cloud microservices, acting as a one-stop adapter for ingestion, retrieval, search, and
+        RAG-augmented context-chat. Consumed via APIs by AssessmentX; also shippable standalone with its
+        own Angular UI.</p>
+        <ul class="bullets">
+          <li><strong>Agentic SDK.</strong> Domain-agnostic, LangGraph-based SDK so new agents ship by writing only
+            a skill manifest and tools implementation — 5 graph templates, three-tier model resolution, Send-based
+            parallel orchestration, Pydantic structured outputs, and bounded retry are reused across agents. Three
+            production specialist agents shipped on it.</li>
+          <li><strong>Document IR ingestion, hybrid retrieval &amp; NL→MongoDB query generation.</strong> Redesigned
+            ingestion around a type-agnostic Intermediate Representation (IR) that processes any document in a
+            single pass, dual-indexing all content: structured data into MongoDB for explicit querying and the same
+            content into MongoDB Atlas Vector Search for semantic retrieval. Hybrid search (vector + BM25/TF-IDF +
+            RRF + LLM/BGE re-rank); provider-agnostic across Cisco BridgeIT.</li>
+          <li><strong>Debugger Studio.</strong> LangSmith-grade, self-hosted observability for LangGraph agents —
+            built for HIPAA-aware AI that must stay inside Cisco's network. Auto-discovers agents; live DAG, span
+            tree, per-node inspection, latency waterfall, token/cost accounting, LLM-as-judge scoring, run
+            comparison, and an in-browser prompt playground with from-run replay.</li>
+          <li><strong>Governed LLM codegen (Assessment Studio).</strong> LLM authors per-pack Python from a
+            markdown spec, gated by an AST allowlist, then human approval (SHA-256 over the script), then a
+            frozen-pack snapshot; approved scripts execute in a subprocess sandbox with memory and time caps.</li>
+          <li><strong>Agentic SDLC framework.</strong> Multi-IDE developer toolkit distributed by git subtree as
+            ~55 skills (Jira / Confluence / SharePoint / Splunk / OpenShift), an age-encrypted secret vault, a
+            TypeScript MCP server (31 tools / 10 resources / 5 prompts), and security gates on CSDL,
+            OWASP ZAP, Trivy, Semgrep, Anchore, and Cisco AI Defense MCP scanning.</li>
+        </ul>
+      </div>
+
+      <div class="role">
+        <div class="role-header">
+          <span class="role-title">Software Consulting Engineer IV — CX Healthcare, AssessmentX</span>
+          <span class="role-dates">Sep 2022 – Nov 2024</span>
+        </div>
+        <p class="role-desc">Built Cisco's internal assessment-automation platform AssessmentX from the ground up
+        with three other engineers, supporting the CX Healthcare PS-delivery team running HIMSS healthcare
+        assessments for hospitals, providers, and life-sciences customers.</p>
+        <ul class="bullets">
+          <li><strong>Platform build.</strong> Architected and shipped end-to-end: Java 21 / Spring Boot 3.5 /
+            Spring Cloud Maven monorepo of 10 microservices + Python AI companion (Flask → FastAPI) + Angular 18
+            standalone UI. Multi-stage Docker on hardened Alpine JRE 21 to Cisco ECR.</li>
+          <li><strong>Healthcare &amp; capability assessment suite.</strong> Led 4-lane parallel delivery of a new
+            assessment type end-to-end, then rationalized the suite into a shared questionnaire component and
+            score model — now the template every new assessment type follows.</li>
+          <li><strong>Cross-stack integration &amp; security hardening.</strong> Consolidated secrets into AWS
+            Secrets Manager; ported AI companion Flask → FastAPI; drove CSDL and SonarQube compliance —
+            Spring/security/bouncy-castle upgrades, OWASP ZAP, OAuth + CSP hardening.</li>
+        </ul>
+      </div>
+
+      <div class="role">
+        <div class="role-header">
+          <span class="role-title">Software Consulting Engineer IV — AppDynamics, Customer Engineering</span>
+          <span class="role-dates">Feb 2022 – Sep 2022</span>
+        </div>
+        <p class="role-desc">Internal team transfer to AppDynamics — customer-facing engineering-consulting role
+        on observability strategy for enterprise customers.</p>
+        <ul class="bullets">
+          <li><strong>Technical SME, customer engagement lifecycle.</strong> Embedded with enterprise AppDynamics
+            customers as architecture-level SME on observability. Walked through architecture, codified KPIs with
+            engineering leadership, engaged C-suite to capture the observability vision, and translated it into
+            engineering requirements through delivery. Customer roster: Tech Mahindra, Fastenal, Carnival, RNDC.
+            Earned a top-quartile bonus and a formal recommendation from the engineering lead.</li>
+        </ul>
+      </div>
+
+      <div class="role">
+        <div class="role-header">
+          <span class="role-title">Software Consulting Engineer III → IV — CX Collaboration, CDCoE</span>
+          <span class="role-dates">Nov 2018 – Feb 2022</span>
+        </div>
+        <p class="role-desc">Engineering lead on the Collaboration Workflow Manager (CWM) — Cisco CDCoE's enterprise
+        platform for onboarding and provisioning users onto Cisco collaboration infrastructure for Bank of America
+        and Apple. Promoted SCE III → IV in Apr 2021.</p>
+        <ul class="bullets">
+          <li><strong>CWM architecture lead.</strong> Owned data-extraction and data-aggregation microservices;
+            drove cluster consolidation and data-migration services. Led customer rollouts for Bank of America
+            and Apple.</li>
+          <li><strong>Webex Contact Center agent-statistics dashboard.</strong> Designed and shipped end-to-end
+            independently (Angular + Spring Cloud + MongoDB) — live agent, queue, and contact metrics for Webex
+            CC customers.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Infosys -->
+    <div class="exp-block">
+      <div class="exp-company">
+        <span class="exp-company-name">Infosys Limited</span>
+        <span class="exp-company-meta">Aug 2011 – Nov 2018 &nbsp;·&nbsp; Bangalore → SF Bay Area</span>
+      </div>
+      <div class="role">
+        <div class="role-header">
+          <span class="role-title">Backend / Systems Engineer — JPMorgan Chase provisioning platform</span>
+          <span class="role-dates">2011 – 2017 · Bangalore</span>
+        </div>
+        <ul class="bullets">
+          <li>Built Java + jBPM workflow scripts and Spring REST + SOAP-WS northbound APIs for JPMorgan Chase's
+            enterprise provisioning platform. Processed <strong>500K+ requests</strong> across a 5-year engagement.
+            Promoted twice; relocated to the US in 2017.</li>
+        </ul>
+      </div>
+      <div class="role">
+        <div class="role-header">
+          <span class="role-title">Full-Stack Engineer — Custom Application Development &amp; Integrations (CADI)</span>
+          <span class="role-dates">2017 – 2018 · SF Bay Area</span>
+        </div>
+        <ul class="bullets">
+          <li>Continued the JPMorgan Chase engagement from the US delivery center; owned 100% of usability
+            improvements; delivered a complete UI redesign and the platform's log-management system.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills">
+    <p class="section-title">Technical Skills</p>
+
+    <div class="skill-row">
+      <p class="skill-label">AI / ML Skills</p>
+      <div class="skill-tags">
+        <span class="tag">Fine-tuning SLMs / LLMs</span><span class="tag">Agentic SDK development</span>
+        <span class="tag">LangGraph</span><span class="tag">LangChain</span>
+        <span class="tag">RAG / Hybrid Retrieval</span><span class="tag">LoRA / QLoRA</span>
+        <span class="tag">Synthetic data generation</span><span class="tag">LLM-as-judge</span>
+        <span class="tag">Pairwise evaluation</span><span class="tag">ROUGE-L</span>
+        <span class="tag">NL→MongoDB / NL→SQL</span><span class="tag">GraphRAG</span>
+        <span class="tag">Hierarchical retrieval</span><span class="tag">BM25 / TF-IDF</span>
+        <span class="tag">Reciprocal Rank Fusion</span><span class="tag">BGE re-ranker</span>
+        <span class="tag">Matryoshka embeddings</span><span class="tag">Intent classification</span>
+        <span class="tag">Multi-agent orchestration</span><span class="tag">MCP</span>
+        <span class="tag">AI guardrails</span><span class="tag">HIPAA-aware AI observability</span>
+        <span class="tag">LLM codegen (AST-gated)</span><span class="tag">Prompt-injection defense</span>
+        <span class="tag">Tokenization</span>
+      </div>
+    </div>
+
+    <div class="skill-row">
+      <p class="skill-label">AI / ML Tools</p>
+      <div class="skill-tags">
+        <span class="tag">PyTorch</span><span class="tag">HuggingFace Transformers</span>
+        <span class="tag">TRL</span><span class="tag">PEFT</span>
+        <span class="tag">LangSmith</span><span class="tag">RAGAS</span>
+        <span class="tag">pandas</span><span class="tag">NumPy</span>
+        <span class="tag">scikit-learn</span><span class="tag">XGBoost</span>
+        <span class="tag">TensorFlow</span><span class="tag">AWS Bedrock</span>
+        <span class="tag">AWS SageMaker</span><span class="tag">GPT-4o</span>
+        <span class="tag">Anthropic Claude</span><span class="tag">Gemini</span>
+        <span class="tag">Llama</span><span class="tag">Azure OpenAI</span>
+        <span class="tag">Ollama</span>
+      </div>
+    </div>
+
+    <div class="skill-row">
+      <p class="skill-label">Backend Engineering &amp; Databases</p>
+      <div class="skill-tags">
+        <span class="tag">Python (FastAPI · Flask)</span><span class="tag">Java 21</span>
+        <span class="tag">Spring Boot 3 / Spring Cloud</span><span class="tag">Maven</span>
+        <span class="tag">REST / gRPC / SSE</span><span class="tag">Microservices</span>
+        <span class="tag">Distributed systems</span><span class="tag">Event-driven architecture</span>
+        <span class="tag">MongoDB Atlas</span><span class="tag">PostgreSQL</span><span class="tag">DuckDB</span>
+      </div>
+    </div>
+
+    <div class="skill-row">
+      <p class="skill-label">Frontend</p>
+      <div class="skill-tags">
+        <span class="tag">Angular 18</span><span class="tag">TypeScript</span>
+        <span class="tag">Standalone components</span><span class="tag">Signals</span>
+        <span class="tag">Figma AI designs</span>
+      </div>
+    </div>
+
+    <div class="skill-row">
+      <p class="skill-label">Security</p>
+      <div class="skill-tags">
+        <span class="tag">HIPAA-aware design</span><span class="tag">FedRAMP-adjacent</span>
+        <span class="tag">CSDL compliance</span><span class="tag">OWASP ZAP</span>
+        <span class="tag">Trivy</span><span class="tag">Semgrep</span>
+        <span class="tag">Anchore</span><span class="tag">OAuth</span>
+        <span class="tag">JWT</span><span class="tag">AWS Secrets Manager</span>
+        <span class="tag">Age-encrypted secret vault</span>
+      </div>
+    </div>
+
+    <div class="skill-row">
+      <p class="skill-label">Development Tools &amp; Cloud</p>
+      <div class="skill-tags">
+        <span class="tag">Docker</span><span class="tag">Kubernetes</span>
+        <span class="tag">OpenShift</span><span class="tag">Terraform</span>
+        <span class="tag">CI/CD</span><span class="tag">Jenkins</span>
+        <span class="tag">AWS (S3 · ECR · OpenSearch · EC2)</span>
+        <span class="tag">GCP</span><span class="tag">Azure</span>
+        <span class="tag">Cursor</span><span class="tag">Claude Code</span>
+        <span class="tag">GitHub Copilot</span><span class="tag">Conda</span>
+        <span class="tag">Jira</span><span class="tag">Confluence</span>
+        <span class="tag">Splunk</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- EDUCATION -->
+  <section id="education">
+    <p class="section-title">Education</p>
+    <div class="edu-row">
+      <div>
+        <p class="edu-degree">M.S. Computer Science — Artificial Intelligence</p>
+        <p class="edu-school">Georgia Institute of Technology &nbsp;·&nbsp; Atlanta, GA (Online)</p>
+      </div>
+      <span class="edu-year">Dec 2024</span>
+    </div>
+    <div class="edu-row">
+      <div>
+        <p class="edu-degree">B.Tech. Electronics &amp; Communications Engineering</p>
+        <p class="edu-school">Punjabi University, Patiala &nbsp;·&nbsp; Punjab, India</p>
+      </div>
+      <span class="edu-year">Jan 2011</span>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Kartik Makkar &nbsp;·&nbsp;
+    <a href="mailto:kartikmakkar.in@gmail.com">kartikmakkar.in@gmail.com</a> &nbsp;·&nbsp;
+    <a href="https://linkedin.com/in/makkarkartik" target="_blank" rel="noopener">LinkedIn</a>
+  </p>
+  <p style="margin-top:6px; font-size:12px;">© 2026 Kartik Makkar</p>
+</footer>
+
+</body>
+</html>
