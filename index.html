@@ -56,6 +56,9 @@
       background: var(--bg);
       transition: background var(--transition), color var(--transition);
       -webkit-font-smoothing: antialiased;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
     }
 
     /* ── NAV ────────────────────────────────────────────── */
@@ -477,8 +480,8 @@
       <p class="research-meta">Independent Project &nbsp;·&nbsp; 2025 &nbsp;·&nbsp; Local QLoRA training &amp; serving (RTX 4090) &nbsp;·&nbsp; gpt-5 teacher for synthetic Q&amp;A</p>
 
       <p class="research-body">
-        Built an end-to-end pipeline to ingest <strong>6,000+ publicly-available US hospital healthcare
-        documents</strong> across all 50 states and territories — <strong>519,555 retrieval chunks</strong> — then
+        Built an end-to-end pipeline to ingest <strong>6,000+ publicly-available healthcare
+        documents</strong> — <strong>519,555 retrieval chunks</strong> — then
         fine-tuned Llama 3.2 3B Instruct into a domain Q&amp;A specialist answering complex questions about
         healthcare infrastructure, resource gaps, and demographic needs.
       </p>
@@ -733,6 +736,14 @@
   // Restore saved theme
   const saved = localStorage.getItem('theme');
   if (saved) document.documentElement.dataset.theme = saved;
+
+  // ── Content-copy deterrence ─────────────────────────
+  // NOTE: deterrence only. Bypassable via View Source, devtools,
+  // disabling JS, or reader mode. Does NOT prevent screenshots
+  // (no web API can). Kept aggressive per request.
+  ['contextmenu', 'copy', 'cut', 'selectstart', 'dragstart'].forEach((evt) => {
+    document.addEventListener(evt, (e) => e.preventDefault());
+  });
 
   // Scroll fade-in
   const observer = new IntersectionObserver((entries) => {
