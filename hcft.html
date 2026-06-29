@@ -235,26 +235,34 @@
 <!-- RAGAS -->
 <section id="ragas">
   <p class="kicker">3 · Independent groundedness</p>
-  <h2>RAGAS — faithfulness to source</h2>
-  <p class="sub">A standard, independent framework checking whether the answer's claims are <strong>supported by the
-    context</strong>. The catch that makes it strong corroboration: its judge is from the <strong>frontier's own
-    family</strong>, and it still rates the fine-tune's answers most faithful.</p>
+  <h2>RAGAS — faithfulness &amp; answer-relevancy</h2>
+  <p class="sub">A standard, independent framework scoring two facets of an answer. Its judge is from the
+    <strong>frontier's own family</strong> — so it would, if anything, favor the GPT candidates, which makes the
+    fine-tune's faithfulness lead meaningful. Read the two together: they're driven by the same <strong>deliberate property</strong> — the model's
+    terse, extractive style — which faithfulness rewards and relevancy penalizes.</p>
   <div class="charts">
     <div class="chart">
-      <h3>Faithfulness <span style="color:var(--faint);font-weight:400">↑ better</span></h3>
-      <p class="ch-sub">claims grounded in the retrieved context</p>
+      <h3>Faithfulness</h3>
+      <p class="ch-sub">Are the answer's claims supported by the context? Rewards an answer that stays close to the
+        source — exactly what tight, grounded extraction does.</p>
       <div class="row hl"><span class="name">FT-12B</span><div class="track"><div class="fill win" style="width:92.5%">0.925</div></div></div>
       <div class="row"><span class="name">gpt-5.4-mini</span><div class="track"><div class="fill lo" style="width:91.4%">0.914</div></div></div>
       <div class="row"><span class="name">gpt-5.4</span><div class="track"><div class="fill lo" style="width:90.4%">0.904</div></div></div>
     </div>
     <div class="chart">
-      <h3>Answer-relevancy <span style="color:var(--faint);font-weight:400">(rewards verbosity)</span></h3>
-      <p class="ch-sub">our terse, extractive answers are penalized here</p>
+      <h3>Answer-relevancy</h3>
+      <p class="ch-sub">Does the answer address the question? It reconstructs a question from the answer, so it rewards
+        elaboration and penalizes concision.</p>
       <div class="row"><span class="name">FT-12B</span><div class="track"><div class="fill lo" style="width:42.8%">0.428</div></div></div>
       <div class="row"><span class="name">gpt-5.4-mini</span><div class="track"><div class="fill lo" style="width:62.4%">0.624</div></div></div>
       <div class="row"><span class="name">gpt-5.4</span><div class="track"><div class="fill lo" style="width:68.8%">0.688</div></div></div>
     </div>
   </div>
+  <p class="note" style="margin-top:18px"><strong>That concision is a feature, not the flaw the relevancy score implies.</strong>
+    Terse, extractive answers mean <strong>fewer output tokens — lower decode latency and inference cost</strong> — with
+    tighter grounding (the faithfulness lead). RAGAS's relevancy rewards verbosity; a production RAG copilot rewards the
+    correct, grounded answer in the <em>fewest</em> tokens. The two scores are one property — decode-efficient grounding —
+    measured from opposite ends.</p>
 </section>
 
 <!-- THE MIRAGE -->
