@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HCFT — Project Dashboard · Kartik Makkar</title>
+<meta name="description" content="Self-hosted fine-tuned 12B vs frontier GPT-5.4 on grounded healthcare QA — full evaluation dashboard: calibration, bias-balanced judge panel, RAGAS.">
+<link rel="canonical" href="https://kartikmakkar.com/hcft.html">
+<style>
+  :root{
+    --max:980px; --radius:10px; --transition:200ms ease;
+    --bg:#0c0f1a; --surface:#131929; --surface2:#0f1525;
+    --border:rgba(255,255,255,0.07); --border-hv:rgba(255,255,255,0.14);
+    --text:#e8edf5; --muted:#8b94a7; --faint:#5a6477;
+    --accent:#4f8eff; --accent-bg:rgba(79,142,255,0.1); --accent-glow:rgba(79,142,255,0.25);
+    --good:#46c98b; --good-bg:rgba(70,201,139,0.12); --bad:#f0596b; --warn:#e0b341;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
+  /* nav */
+  nav{position:sticky;top:0;z-index:10;background:rgba(12,15,26,0.85);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
+  nav a.back{color:var(--text);font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:7px}
+  nav a.back:hover{color:var(--accent)}
+  nav .navlinks a{color:var(--muted);font-size:13px;margin-left:18px}
+  nav .navlinks a:hover{color:var(--text)}
+  /* hero */
+  header.hero{padding:54px 0 8px}
+  .eyebrow{color:var(--accent);font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin:0 0 12px}
+  h1{font-size:33px;line-height:1.18;margin:0 0 14px;letter-spacing:-0.02em}
+  h1 em{color:var(--accent);font-style:normal}
+  .lede{color:var(--muted);font-size:16px;max-width:760px;margin:0 0 22px}
+  .lede strong{color:var(--text);font-weight:600}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 30px}
+  .pill{font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--border);
+    border-radius:999px;padding:5px 12px}
+  /* headline stat row */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:8px 0 6px}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 16px}
+  .stat.win{border-color:rgba(70,201,139,0.4);background:linear-gradient(180deg,var(--good-bg),transparent)}
+  .stat .v{font-size:27px;font-weight:700;letter-spacing:-0.01em}
+  .stat.win .v{color:var(--good)}
+  .stat .l{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
+  /* sections */
+  section{padding:34px 0;border-top:1px solid var(--border);margin-top:28px}
+  section:first-of-type{border-top:none;margin-top:0}
+  .kicker{color:var(--accent);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin:0 0 6px}
+  h2{font-size:22px;margin:0 0 6px;letter-spacing:-0.01em}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 20px;max-width:780px}
+  .note{color:var(--muted);font-size:13.5px;max-width:800px}
+  .note strong,.sub strong{color:var(--text);font-weight:600}
+  /* chart */
+  .charts{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .chart{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px}
+  .chart h3{font-size:14px;margin:0 0 2px}
+  .chart .ch-sub{font-size:12px;color:var(--faint);margin:0 0 16px}
+  .row{display:flex;align-items:center;gap:10px;margin:11px 0}
+  .row .name{width:96px;font-size:13px;color:var(--muted);flex:none;text-align:right}
+  .row.hl .name{color:var(--good);font-weight:700}
+  .track{flex:1;height:22px;background:var(--surface2);border-radius:6px;overflow:hidden;position:relative}
+  .fill{height:100%;border-radius:6px;background:var(--faint);display:flex;align-items:center;justify-content:flex-end;
+    padding-right:8px;font-size:11.5px;font-weight:700;color:#fff;min-width:34px;transition:width 600ms ease}
+  .fill.win{background:linear-gradient(90deg,#2e7d5b,var(--good))}
+  .fill.mid{background:#3a4566}
+  .fill.lo{background:#46506a}
+  .axis{font-size:11px;color:var(--faint);margin-top:6px;text-align:right}
+  /* tables */
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+  table{border-collapse:collapse;width:100%;font-size:13px;min-width:520px}
+  th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap}
+  th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+  tbody tr:last-child td{border-bottom:none}
+  td.name,th:first-child{text-align:left}
+  td.name{color:var(--text);font-weight:600}
+  tr.ft td{background:rgba(70,201,139,0.07)}
+  tr.ft td.name{color:var(--good)}
+  .good{color:var(--good)} .bad{color:var(--bad)} .muted{color:var(--muted)} .hi{color:var(--text);font-weight:700}
+  .win-badge{display:inline-block;font-size:10px;font-weight:700;color:var(--good);background:var(--good-bg);
+    border-radius:4px;padding:1px 6px;margin-left:6px;vertical-align:middle}
+  /* callout */
+  .callout{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:8px;padding:16px 20px;margin-top:8px}
+  .callout b{color:var(--warn)}
+  /* two-col panels */
+  .panels{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+  .panel .ph{font-size:14px;font-weight:600;margin:0 0 4px}
+  .panel .verdict{margin-top:12px;font-size:13px;color:var(--muted)}
+  .panel .verdict b{color:var(--text)}
+  footer{border-top:1px solid var(--border);padding:30px 0 50px;color:var(--faint);font-size:13px;margin-top:30px}
+  footer a{color:var(--muted)} footer a:hover{color:var(--accent)}
+  @media(max-width:760px){
+    .stats{grid-template-columns:1fr 1fr}.charts{grid-template-columns:1fr}.panels{grid-template-columns:1fr}
+    h1{font-size:27px}
+  }
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="back" href="/">&larr;&nbsp; Kartik Makkar</a>
+  <div class="navlinks">
+    <a href="#calibration">Calibration</a>
+    <a href="#panel">Judge panel</a>
+    <a href="#ragas">RAGAS</a>
+    <a href="#method">Method</a>
+  </div>
+</div></nav>
+
+<div class="wrap">
+
+<header class="hero">
+  <p class="eyebrow">Applied ML Research · Project Dashboard</p>
+  <h1>A self-hosted 12B that <em>out-calibrates</em> the frontier on grounded QA</h1>
+  <p class="lede">
+    Can a self-hosted, fine-tuned <strong>~12B</strong> model hold its own against a <strong>frontier API</strong>
+    on a specialized, high-stakes grounded-QA domain — at a fraction of the inference cost? The honest answer:
+    it <strong>ties the strong small frontier</strong>, <strong>trails the full frontier</strong> on raw answering,
+    and <strong>decisively wins calibration</strong> — knowing when to refuse.
+  </p>
+  <div class="pills">
+    <span class="pill">Gemma 12B · bf16 LoRA · RAFT</span>
+    <span class="pill">8×H200 single-node DDP (Modal)</span>
+    <span class="pill">vs GPT-5.4 / GPT-5.4-mini</span>
+    <span class="pill">1,880 held-out test cases</span>
+    <span class="pill">bias-balanced 3-family judge panel</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat win"><div class="v">79.5%</div><div class="l">Balanced answer/refuse accuracy — best of the three models</div></div>
+    <div class="stat win"><div class="v">74%</div><div class="l">Correctly refuses the unanswerable <span style="color:var(--faint)">(full frontier: 16%)</span></div></div>
+    <div class="stat win"><div class="v">0.925</div><div class="l">RAGAS faithfulness — most grounded of the three</div></div>
+    <div class="stat"><div class="v">0.934</div><div class="l">Validation token-accuracy of the tuned adapter</div></div>
+  </div>
+</header>
+
+<!-- CALIBRATION -->
+<section id="calibration">
+  <p class="kicker">1 · The headline result</p>
+  <h2>Calibration — the answer / refuse decision</h2>
+  <p class="sub">Scored over <strong>all 1,880 test cases</strong> (1,572 answerable + 308 deliberately unanswerable).
+    The chart on the left uses <strong>balanced accuracy</strong> — not raw accuracy, which rewards an
+    "always answer" model on an 84%-answerable set. On the metric that can't be gamed, the fine-tune leads.</p>
+
+  <div class="charts">
+    <div class="chart">
+      <h3>Balanced answer/refuse accuracy</h3>
+      <p class="ch-sub">macro-average of both classes · higher is better</p>
+      <div class="row hl"><span class="name">FT-12B (ours)</span><div class="track"><div class="fill win" style="width:79.5%">79.5%</div></div></div>
+      <div class="row"><span class="name">gpt-5.4-mini</span><div class="track"><div class="fill lo" style="width:67.4%">67.4%</div></div></div>
+      <div class="row"><span class="name">gpt-5.4 (full)</span><div class="track"><div class="fill lo" style="width:57.3%">57.3%</div></div></div>
+      <p class="axis">0 — 100%</p>
+    </div>
+    <div class="chart">
+      <h3>Correctly refuses the unanswerable</h3>
+      <p class="ch-sub">share of 308 unanswerable rows refused · higher is better</p>
+      <div class="row hl"><span class="name">FT-12B (ours)</span><div class="track"><div class="fill win" style="width:74.4%">74%</div></div></div>
+      <div class="row"><span class="name">gpt-5.4-mini</span><div class="track"><div class="fill lo" style="width:54.5%">55%</div></div></div>
+      <div class="row"><span class="name">gpt-5.4 (full)</span><div class="track"><div class="fill lo" style="width:15.6%">16%</div></div></div>
+      <p class="axis">0 — 100%</p>
+    </div>
+  </div>
+
+  <p class="sub" style="margin-top:22px">The full confusion matrix — every cell is a true partition of the 1,880 cases:</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr>
+      <th>model</th><th>true&nbsp;answer</th><th>false&nbsp;refusal</th><th>true&nbsp;refusal</th><th>false&nbsp;answer</th>
+      <th>hallucination&nbsp;rate</th><th>balanced&nbsp;acc</th><th>refuse&nbsp;F1</th>
+    </tr></thead>
+    <tbody>
+      <tr class="ft"><td class="name">FT-12B (ours)</td><td>1332</td><td>240</td><td class="good">229</td><td class="good">79</td><td class="good">25.7%</td><td class="hi">79.5%<span class="win-badge">best</span></td><td class="good">0.589</td></tr>
+      <tr><td class="name">gpt-5.4-mini</td><td>1263</td><td>309</td><td>168</td><td>140</td><td>45.5%</td><td>67.4%</td><td>0.428</td></tr>
+      <tr><td class="name">gpt-5.4 (full)</td><td>1556</td><td>16</td><td class="bad">48</td><td class="bad">260</td><td class="bad">84.4%</td><td>57.3%</td><td>0.258</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note" style="margin-top:16px">Full gpt-5.4 wins <em>raw</em> accuracy (85%) — but only because it's a near-constant answerer
+    that <strong>fabricates an answer to 84% of the unanswerable questions</strong>. In a domain where a confident
+    hallucination is the worst outcome, the fine-tune's calibrated abstention is the property that matters.</p>
+</section>
+
+<!-- JUDGE PANEL -->
+<section id="panel">
+  <p class="kicker">2 · Quality, judged fairly</p>
+  <h2>Bias-balanced LLM-judge panel</h2>
+  <p class="sub">An LLM judge quietly favors its own model family — and three families were tangled into this experiment
+    (the <strong>teacher</strong> that wrote the gold, the <strong>student</strong> I fine-tuned, the
+    <strong>candidate</strong> I compared against). So the panel is deliberately bias-diversified: an OpenAI-family
+    judge (tough on us), a teacher-family judge (kind to us), and a neutral Meta/Llama judge that touched nothing.
+    All three vote independently on every row, in both answer orders, at <strong>full coverage (1,572 grounded rows)</strong>.</p>
+
+  <div class="panels">
+    <div class="panel">
+      <div class="ph">FT vs gpt-5.4-mini <span class="win-badge">dead heat</span></div>
+      <div class="tablewrap" style="border:none">
+      <table style="min-width:0">
+        <thead><tr><th>judge</th><th>win</th><th>tie</th><th>lose</th><th>bias</th></tr></thead>
+        <tbody>
+          <tr><td class="name">gpt-oss</td><td class="good">298</td><td class="muted">965</td><td class="bad">309</td><td>+0.005</td></tr>
+          <tr><td class="name">opus</td><td class="good">267</td><td class="muted">1081</td><td class="bad">224</td><td>+0.039</td></tr>
+          <tr><td class="name">llama <span class="muted">·neutral</span></td><td class="good">54</td><td class="muted">1445</td><td class="bad">73</td><td>0.000</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="verdict">Majority <b>252W / 1101T / 219L</b> · panel mean <b>+0.003</b> → statistically even (a hair our way).</div>
+    </div>
+    <div class="panel">
+      <div class="ph">FT vs gpt-5.4 (full)</div>
+      <div class="tablewrap" style="border:none">
+      <table style="min-width:0">
+        <thead><tr><th>judge</th><th>win</th><th>tie</th><th>lose</th><th>bias</th></tr></thead>
+        <tbody>
+          <tr><td class="name">gpt-oss</td><td class="good">92</td><td class="muted">1045</td><td class="bad">435</td><td class="bad">−0.148</td></tr>
+          <tr><td class="name">opus</td><td class="good">75</td><td class="muted">1197</td><td class="bad">300</td><td>−0.073</td></tr>
+          <tr><td class="name">llama <span class="muted">·neutral</span></td><td class="good">10</td><td class="muted">1442</td><td class="bad">120</td><td>0.000</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="verdict">Majority <b>62W / 1210T / 300L</b> · panel mean <b>−0.144</b> → full frontier clearly ahead.</div>
+    </div>
+  </div>
+  <p class="note" style="margin-top:16px"><strong>The bias readout validates the design:</strong> the OpenAI-family judge is
+    near-neutral vs mini (+0.005) but the harshest read vs its own flagship sibling, full gpt-5.4 (−0.148). The opposite
+    leans roughly cancel, and the family-neutral judge independently agrees with the majority both times — so the
+    conclusion doesn't depend on which judge you trust.</p>
+</section>
+
+<!-- RAGAS -->
+<section id="ragas">
+  <p class="kicker">3 · Independent groundedness</p>
+  <h2>RAGAS — faithfulness to source</h2>
+  <p class="sub">A standard, independent framework checking whether the answer's claims are <strong>supported by the
+    context</strong>. The catch that makes it strong corroboration: its judge is from the <strong>frontier's own
+    family</strong>, and it still rates the fine-tune's answers most faithful.</p>
+  <div class="charts">
+    <div class="chart">
+      <h3>Faithfulness <span style="color:var(--faint);font-weight:400">↑ better</span></h3>
+      <p class="ch-sub">claims grounded in the retrieved context</p>
+      <div class="row hl"><span class="name">FT-12B</span><div class="track"><div class="fill win" style="width:92.5%">0.925</div></div></div>
+      <div class="row"><span class="name">gpt-5.4-mini</span><div class="track"><div class="fill lo" style="width:91.4%">0.914</div></div></div>
+      <div class="row"><span class="name">gpt-5.4</span><div class="track"><div class="fill lo" style="width:90.4%">0.904</div></div></div>
+    </div>
+    <div class="chart">
+      <h3>Answer-relevancy <span style="color:var(--faint);font-weight:400">(rewards verbosity)</span></h3>
+      <p class="ch-sub">our terse, extractive answers are penalized here</p>
+      <div class="row"><span class="name">FT-12B</span><div class="track"><div class="fill lo" style="width:42.8%">0.428</div></div></div>
+      <div class="row"><span class="name">gpt-5.4-mini</span><div class="track"><div class="fill lo" style="width:62.4%">0.624</div></div></div>
+      <div class="row"><span class="name">gpt-5.4</span><div class="track"><div class="fill lo" style="width:68.8%">0.688</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- THE MIRAGE -->
+<section id="mirage">
+  <p class="kicker">The trap I almost fell into</p>
+  <h2>Why overlap metrics are a mirage here</h2>
+  <div class="callout">
+    <p style="margin:0 0 8px">Pulled the standard overlap metrics first, and they were <em>thrilling</em>: the
+      self-hosted 12B looked like it <b>crushed</b> both frontiers — <strong>ROUGE-L 0.725 vs 0.556</strong>,
+      <strong>BERTScore 0.711 vs 0.515</strong>.</p>
+    <p style="margin:0;color:var(--muted)">It was a mirage. Those metrics reward <b>looking like the reference answer</b> —
+      and my model was trained on reference answers written by a strong teacher model, so it learned to echo that
+      teacher's phrasing. Overlap was measuring <strong>stylistic mimicry, not correctness</strong>. Every instrument
+      above exists to replace that flattering number with one I can defend.</p>
+  </div>
+</section>
+
+<!-- METHOD -->
+<section id="method">
+  <p class="kicker">How it was built</p>
+  <h2>Method &amp; stack</h2>
+  <p class="sub">Three decisions did most of the work — each one fixing a way the measurement could lie.</p>
+  <ul class="note" style="padding-left:18px;line-height:1.8">
+    <li><strong>Retriever-first.</strong> Tuned and <em>froze</em> a hybrid retriever (dense + BM25 + RRF + cross-encoder
+      rerank, hit@5 ~0.78) before evaluating the generator — otherwise you benchmark the wrong half of the system.</li>
+    <li><strong>Retriever-aware training.</strong> Every RAFT example was built from the retriever's <em>real</em> top-5
+      output — its actual near-misses and genuinely unanswerable cases — so the training distribution matched deployment.</li>
+    <li><strong>Train it to abstain.</strong> A deliberate share of training rows are unanswerable; the model is taught to
+      refuse rather than guess. That discipline is the calibration win above.</li>
+  </ul>
+  <p class="note" style="margin-top:18px">
+    <strong>Stack:</strong> gemma-4-12b-it · full-precision <strong>bf16 LoRA</strong> (PEFT) · 8×H200 single-node DDP on
+    Modal · LlamaIndex + Qdrant (hybrid retrieval) · bge cross-encoder rerank · MLflow tracking · evaluation via a custom
+    bias-balanced judge panel (Anthropic Batch API), a deterministic confusion matrix, and RAGAS.
+  </p>
+</section>
+
+<footer><div>
+  <p style="margin:0 0 6px">Independent applied-ML research · 2025–2026 · self-hosted fine-tuning &amp; evaluation.</p>
+  <p style="margin:0"><a href="/">← Back to portfolio</a> &nbsp;·&nbsp; <a href="https://github.com/makkarkartik" target="_blank" rel="noopener">GitHub ↗</a></p>
+</div></footer>
+
+</div>
+</body>
+</html>

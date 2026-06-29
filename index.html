@@ -415,6 +415,61 @@
       transform: translateY(0);
     }
 
+    /* ── RÉSUMÉ REQUEST MODAL ───────────────────────────── */
+    /* Form fields must stay selectable/typeable despite the global
+       copy-deterrence (user-select:none on body, blocked selectstart). */
+    .modal input, .modal textarea {
+      -webkit-user-select: text; -ms-user-select: text; user-select: text;
+    }
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      display: none;
+      align-items: center; justify-content: center;
+      padding: 24px;
+      background: rgba(4,6,12,0.66);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 28px 24px;
+      width: 100%; max-width: 440px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+    }
+    .modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 6px; }
+    .modal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; font-weight: 700; color: var(--text); }
+    .modal-sub { font-size: 13px; color: var(--text-2); line-height: 1.6; margin-bottom: 20px; }
+    .modal-close {
+      background: none; border: none; color: var(--text-3); cursor: pointer;
+      font-size: 22px; line-height: 1; padding: 0; flex-shrink: 0;
+      transition: color var(--transition);
+    }
+    .modal-close:hover { color: var(--text); }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 12px; color: var(--text-2); margin-bottom: 6px; font-weight: 500; }
+    .field input, .field textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 9px 12px;
+      color: var(--text);
+      font-family: inherit; font-size: 13.5px;
+      transition: border-color var(--transition);
+    }
+    .field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
+    .field textarea { resize: vertical; min-height: 64px; }
+    .modal .btn-primary { width: 100%; justify-content: center; border: none; cursor: pointer; font-family: inherit; }
+    .modal .btn-primary:disabled { opacity: .6; cursor: default; transform: none; }
+    .form-note { font-size: 11px; color: var(--text-3); line-height: 1.6; margin-top: 12px; }
+    .form-status { font-size: 13px; margin-top: 14px; line-height: 1.6; display: none; }
+    .form-status.show { display: block; }
+    .form-status.ok { color: #4ad295; }
+    .form-status.err { color: #ff6b6b; }
+
     /* ── RESPONSIVE ─────────────────────────────────────── */
     @media (max-width: 600px) {
       .nav-links { display: none; }
@@ -466,6 +521,9 @@
     <a href="mailto:kartikmakkar.in@gmail.com" class="btn-ghost">
       Get in touch
     </a>
+    <button type="button" class="btn-ghost" onclick="openResumeModal()">
+      Request résumé
+    </button>
   </div>
 
 </header>
@@ -476,43 +534,42 @@
   <section id="research">
     <p class="section-label fade-up">Applied ML Research</p>
     <div class="research-card fade-up">
-      <p class="research-title">Domain-Specialized SLM Fine-Tuning — Llama 3.2 3B QLoRA<br>on US Public-Healthcare Data</p>
-      <p class="research-meta">Independent Project &nbsp;·&nbsp; 2025 &nbsp;·&nbsp; Local QLoRA training &amp; serving (RTX 4090) &nbsp;·&nbsp; gpt-5 teacher for synthetic Q&amp;A</p>
+      <p class="research-title">Domain-Specialized SLM Fine-Tuning — Gemma 12B (bf16 LoRA)<br>for Grounded RAG That Knows When to Refuse</p>
+      <p class="research-meta">Independent Project &nbsp;·&nbsp; 2025–2026 &nbsp;·&nbsp; bf16 LoRA on 8×H200 single-node DDP (Modal) &nbsp;·&nbsp; benchmarked head-to-head vs GPT-5.4 / GPT-5.4-mini</p>
 
       <p class="research-body">
-        Built an end-to-end pipeline to ingest <strong>6,000+ publicly-available healthcare
-        documents</strong> — <strong>519,555 retrieval chunks</strong> — then
-        fine-tuned Llama 3.2 3B Instruct into a domain Q&amp;A specialist answering complex questions about
-        healthcare infrastructure, resource gaps, and demographic needs.
+        Fine-tuned <strong>Google Gemma 12B</strong> into a domain Q&amp;A specialist to test whether a
+        <strong>self-hosted</strong> model can hold its own against a <strong>frontier API</strong> on specialized
+        grounded QA at a fraction of inference cost — building the retrieval, RAFT data-generation, training, and
+        evaluation pipeline end-to-end. The honest result: it <strong>ties GPT-5.4-mini</strong>, trails full GPT-5.4
+        on answering, and <strong>decisively wins calibration</strong> — knowing when to refuse.
       </p>
 
       <div class="metrics">
         <div class="metric">
-          <div class="metric-val">0.497</div>
-          <div class="metric-lbl">ROUGE-L F1 (RAG)</div>
+          <div class="metric-val">79.5%</div>
+          <div class="metric-lbl">Balanced answer/refuse acc — best of 3</div>
         </div>
         <div class="metric">
-          <div class="metric-val">0.544</div>
-          <div class="metric-lbl">BERTScore F1 (RAG)</div>
+          <div class="metric-val">74%</div>
+          <div class="metric-lbl">Refuses unanswerable — frontier: 16%</div>
         </div>
         <div class="metric">
-          <div class="metric-val">0.84</div>
-          <div class="metric-lbl">Retrieval hit@5</div>
+          <div class="metric-val">0.925</div>
+          <div class="metric-lbl">RAGAS faithfulness — most grounded</div>
         </div>
       </div>
 
       <ul class="research-bullets">
-        <li><strong>Result (overlap).</strong> The tuned 3B reaches <strong>ROUGE-L 0.497 / BERTScore 0.544</strong> — above gpt-4o-mini (0.441 / 0.475) and stock Llama 3.2 3B (0.365 / 0.359) on lexical &amp; semantic overlap, while staying fully self-hostable at 3B.</li>
-        <li><strong>Training architecture.</strong> QLoRA at <strong>LoRA rank 64 (rsLoRA)</strong> across attention + MLP; 4-bit NF4 + double-quant; paged AdamW 8-bit; gradient checkpointing; NEFTune embedding noise; single consumer GPU (RTX 4090, 24 GB). Synthetic Q&amp;A generated by an <strong>OpenAI gpt-5</strong> teacher with answer-overlap faithfulness filtering; rank selected by an r=8/16/32/64 ablation.</li>
-        <li><strong>Leakage-safe holdout splits.</strong> Train / val / test partitioned at the source-entity level so near-duplicate documents can't span splits — the model is rewarded for generalizing, not memorizing.</li>
-        <li><strong>Retrieval stack.</strong> Qwen3 embeddings → dense search → BGE cross-encoder re-rank; hit@1 0.66 · <strong>hit@5 0.84</strong> · MRR 0.74 · nDCG@10 0.78 on held-out questions.</li>
-        <li><strong>Multi-metric evaluation.</strong> ROUGE-L and BERTScore for answer overlap, retrieval hit@k / MRR / nDCG, refusal accuracy on genuinely unanswerable questions, plus an LLM-judge panel (neutral model family) and RAGAS faithfulness as directional signals — all on hospital-level held-out tests.</li>
+        <li><strong>Calibration — the deployable edge.</strong> Over <strong>all 1,880 test cases</strong>, the 12B leads balanced answer/refuse accuracy <strong>79.5% vs 67.4% / 57.3%</strong> and correctly refuses <strong>74% of unanswerable questions vs the full frontier's 16%</strong> (which hallucinates an answer to 84% of them) — the no-hallucination property a high-stakes RAG copilot needs.</li>
+        <li><strong>Judged fairly.</strong> A <strong>bias-balanced 3-model-family LLM-judge panel</strong> (independent majority, answer-order-swapped) at full coverage (1,572 grounded rows × both frontier tiers, via the Anthropic Batch API) cancels judge self-preference; the 12B <strong>ties GPT-5.4-mini</strong> and trails full GPT-5.4 — after exposing overlap metrics (ROUGE/BERTScore) as teacher-mimicry, not correctness.</li>
+        <li><strong>Retriever-first, retriever-aware training.</strong> Froze a hybrid retriever (dense + BM25 + RRF + cross-encoder rerank, <strong>hit@5 ~0.78</strong>) before the generator, then built every RAFT example from the retriever's <strong>real top-5 output</strong> — its actual near-misses and genuinely unanswerable cases — so the training distribution matched deployment.</li>
+        <li><strong>Training architecture.</strong> Full-precision <strong>bf16 LoRA</strong> (frozen base) on <strong>8×H200 single-node DDP</strong> (Modal); val token-accuracy <strong>0.934</strong>; leakage-safe holdout split at the source-entity level so near-duplicates can't span splits.</li>
       </ul>
 
       <div class="card-links">
-        <a href="https://huggingface.co/" class="card-link">HuggingFace ↗</a>
+        <a href="hcft.html" class="card-link">View results dashboard ↗</a>
         <a href="https://github.com/makkarkartik" class="card-link">GitHub ↗</a>
-        <a href="#" class="card-link">Methodology ↗</a>
       </div>
     </div>
   </section>
@@ -726,6 +783,43 @@
   <a href="https://linkedin.com/in/makkarkartik" target="_blank" rel="noopener">linkedin.com/in/makkarkartik</a>
 </footer>
 
+<!-- RÉSUMÉ REQUEST MODAL -->
+<div class="modal-overlay" id="resumeOverlay" onclick="if(event.target===this)closeResumeModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resumeModalTitle">
+    <div class="modal-head">
+      <h2 class="modal-title" id="resumeModalTitle">Request my résumé</h2>
+      <button type="button" class="modal-close" aria-label="Close" onclick="closeResumeModal()">&times;</button>
+    </div>
+    <p class="modal-sub">Send a short note and I'll share the polished résumé with you directly after I review your request.</p>
+
+    <form id="resumeForm">
+      <!-- Web3Forms access key — replace with your own key from https://web3forms.com -->
+      <input type="hidden" name="access_key" value="YOUR_WEB3FORMS_ACCESS_KEY" />
+      <input type="hidden" name="subject" value="Résumé request from portfolio site" />
+      <input type="hidden" name="from_name" value="Portfolio — résumé request" />
+      <!-- Honeypot: bots fill this; humans don't. Submissions with it set are ignored. -->
+      <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" style="display:none" />
+
+      <div class="field">
+        <label for="rf-name">Name</label>
+        <input id="rf-name" type="text" name="name" required autocomplete="name" />
+      </div>
+      <div class="field">
+        <label for="rf-email">Email</label>
+        <input id="rf-email" type="email" name="email" required autocomplete="email" />
+      </div>
+      <div class="field">
+        <label for="rf-reason">Why are you interested? <span style="color:var(--text-3)">(optional)</span></label>
+        <textarea id="rf-reason" name="reason" placeholder="Role, company, or what you'd like to learn more about"></textarea>
+      </div>
+
+      <button type="submit" class="btn-primary" id="rf-submit">Send request</button>
+      <p class="form-note">I'll only use your details to respond to this request. No list, no sharing.</p>
+      <p class="form-status" id="rf-status" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</div>
+
 <script>
   // Theme toggle
   function toggleTheme() {
@@ -756,6 +850,58 @@
   }, { threshold: 0.08 });
 
   document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // ── Résumé request modal ────────────────────────────
+  const resumeOverlay = document.getElementById('resumeOverlay');
+  const resumeForm = document.getElementById('resumeForm');
+  const rfStatus = document.getElementById('rf-status');
+  const rfSubmit = document.getElementById('rf-submit');
+
+  function openResumeModal() {
+    resumeOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('rf-name').focus();
+  }
+  function closeResumeModal() {
+    resumeOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && resumeOverlay.classList.contains('open')) closeResumeModal();
+  });
+
+  function setStatus(msg, kind) {
+    rfStatus.textContent = msg;
+    rfStatus.className = 'form-status show ' + kind;
+  }
+
+  resumeForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    rfSubmit.disabled = true;
+    rfSubmit.textContent = 'Sending…';
+    rfStatus.className = 'form-status';
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: new FormData(resumeForm),
+      });
+      const data = await res.json();
+      if (data.success) {
+        resumeForm.reset();
+        setStatus("Thanks — your request is in. I'll review it and get back to you by email.", 'ok');
+        rfSubmit.textContent = 'Sent ✓';
+      } else {
+        setStatus(data.message || 'Something went wrong. Please email me directly instead.', 'err');
+        rfSubmit.disabled = false;
+        rfSubmit.textContent = 'Send request';
+      }
+    } catch (err) {
+      setStatus('Network error. Please email me directly instead.', 'err');
+      rfSubmit.disabled = false;
+      rfSubmit.textContent = 'Send request';
+    }
+  });
 </script>
 
 </body>
