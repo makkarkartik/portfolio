@@ -527,7 +527,7 @@
   <h1 class="fade-up">Senior AI/ML Engineer<br>&amp; <em>Software Architect</em></h1>
   <p class="hero-summary fade-up">
     14+ years delivering scalable production systems to enterprise customers across
-    collaboration, observability, and healthcare. <strong>Lead architect of Cisco's AssessmentX AI platform.</strong>
+    collaboration, observability, and healthcare. <strong>Lead architect for enterprise healthcare AI at Cisco.</strong>
     Deep in fine-tuning, agentic systems, and retrieval — with the architect's craft of
     translating customer outcomes into engineering deliverables.
     <strong>M.S. CS (AI), Georgia Tech, Dec 2024.</strong>
@@ -616,16 +616,16 @@
 
           <div class="tl-role">
             <div class="tl-role-header">
-              <span class="tl-role-title">Software Architect — AssessmentX AI Platform</span>
+              <span class="tl-role-title">Software Architect — Enterprise Healthcare AI</span>
               <span class="tl-role-dates">Nov 2024 – Present</span>
             </div>
-            <p class="tl-role-desc">Lead architect of AssessmentX AI — Cisco's enterprise AI layer for knowledge ingestion, structured/semantic search, RAG chat, and multi-skill agentic analysis, in production across <strong>40+ hospital systems</strong> (~10 facilities each, <strong>400+ assessment projects</strong>). A FastAPI companion to AssessmentX's Spring-Cloud microservices; shippable standalone with its own Angular UI. Three decoupled production agents ship on a shared, domain-agnostic <strong>LangGraph SDK</strong> — new specialists are declarative skill manifests (5 graph templates, three-tier model resolution, Pydantic-validated outputs, bounded retry), not hand-rolled plan/act/validate loops.</p>
+            <p class="tl-role-desc">Lead architect for enterprise AI in a regulated healthcare setting — production systems that turn enterprise documents and application data into governed knowledge, search, chat, and multi-agent analysis. I design domain-agnostic agent platforms so new capabilities ship as declarative skills rather than hand-rolled agent loops.</p>
             <ul class="tl-bullets">
-              <li><strong>Interactive multi-intent chat agent.</strong> A schema-aware planner that classifies intent per turn and serves three modes from one graph: RAG generation over a type-agnostic Document IR (dual-indexed into MongoDB + Atlas Vector Search; hybrid retrieval — vector + BM25/TF-IDF + RRF + BGE re-rank), an NL→MongoDB aggregation fast path for structured questions, and an analysis launcher. Collapsed a 3-call route/classify/plan chain into one planner (~3→1 LLM calls), holding grounded answers sub-2s while cutting per-turn token cost.</li>
-              <li><strong>Supervisor-orchestrated analysis service.</strong> An independent, HTTP-invoked supervisor graph with Send-based parallel fan-out to specialist sub-agents — each a declarative skill with structured outputs and bounded retry — streaming live graph-topology decisions to the client over SSE. 3 production specialists; custom graphs when templates don't fit. <strong>Saved delivery architects 40–50 hours of manual research per engagement.</strong></li>
-              <li><strong>Governed spec-to-code studio (Assessment Studio).</strong> Authors new assessment pipelines (parse → score → render Python) from a markdown spec, gated by AST allowlist → SHA-256 human approval → frozen-pack snapshot → memory/time-capped subprocess sandbox, so no ungoverned LLM output reaches production. <strong>Collapsed ~4 weeks of engineering lead time per new assessment type into ~25 minutes</strong>, and cut generation cost by routing codegen to cheaper models.</li>
-              <li><strong>Debugger Studio.</strong> Self-hosted, HIPAA-aware, LangSmith-grade observability for all three agents — live DAG / span trees, token &amp; cost accounting, LLM-as-judge scoring, and run comparison. Keeping traces in-network preserved data sovereignty and removed <strong>~$20K/yr in departmental cross-charges</strong>.</li>
-              <li><strong>Agentic SDLC framework.</strong> The AI-native toolkit used to deliver the platform — ~55 multi-IDE skills (Cursor, Claude Code, Copilot, Windsurf), an age-encrypted secret vault, a TypeScript MCP server (31 tools / 10 resources / 5 prompts), and CSDL / OWASP / Cisco AI Defense security gates.</li>
+              <li><strong>Agentic systems.</strong> Domain-agnostic agent SDKs on LangGraph — declarative skills, schema-validated outputs, parallel orchestration, and bounded retries — plus supervisor / multi-agent patterns that ship new capabilities fast and safely.</li>
+              <li><strong>Retrieval &amp; RAG.</strong> Hybrid retrieval (vector + BM25 + Reciprocal Rank Fusion + re-ranking), grounded generation with deterministic citation, and natural-language-to-database querying.</li>
+              <li><strong>Safe LLM automation.</strong> Governed code generation behind static-analysis allowlists, human approval, and sandboxed execution — so nothing ungoverned reaches production.</li>
+              <li><strong>AI observability &amp; evaluation.</strong> Self-hosted, HIPAA-aware tracing, token &amp; cost accounting, and LLM-as-judge scoring for agentic systems.</li>
+              <li><strong>Developer tooling &amp; security.</strong> Multi-IDE AI developer tooling, an encrypted secret vault, and security / compliance (CSDL, OWASP) rigor at enterprise scale.</li>
             </ul>
           </div>
 
@@ -633,14 +633,14 @@
 
           <div class="tl-role">
             <div class="tl-role-header">
-              <span class="tl-role-title">Software Consulting Engineer IV — CX Healthcare, AssessmentX</span>
+              <span class="tl-role-title">Software Consulting Engineer IV — CX Healthcare</span>
               <span class="tl-role-dates">Sep 2022 – Nov 2024</span>
             </div>
-            <p class="tl-role-desc">Built Cisco's internal assessment-automation platform AssessmentX from the ground up with three other engineers, supporting the CX Healthcare PS-delivery team running HIMSS healthcare assessments.</p>
+            <p class="tl-role-desc">Built an enterprise assessment-automation platform from the ground up with a small team — compressing weeks of expert work into repeatable, automated workflows for healthcare and life-sciences customers.</p>
             <ul class="tl-bullets">
-              <li><strong>Platform build.</strong> Java 21 / Spring Boot 3.5 / Spring Cloud Maven monorepo of 10 microservices + Python AI companion (Flask → FastAPI) + Angular 18 standalone UI, wired by Feign over Netflix Eureka; multi-stage Docker on hardened Alpine JRE 21 to Cisco ECR.</li>
-              <li><strong>Assessment suite.</strong> Led 4-lane parallel delivery of a new assessment type end-to-end, then rationalized into a shared questionnaire component and score model — now the template every new assessment type follows.</li>
-              <li><strong>Security hardening.</strong> Consolidated secrets into AWS Secrets Manager; drove CSDL and SonarQube compliance — Spring/security/bouncy-castle upgrades, OWASP ZAP, OAuth + CSP hardening.</li>
+              <li><strong>Platform build.</strong> Architected and shipped end-to-end across Java 21 / Spring Boot / Spring Cloud microservices, a Python AI service, and an Angular standalone UI; containerized delivery on a hardened JRE base image.</li>
+              <li><strong>Delivery.</strong> Led parallel delivery of new product capabilities, then rationalized them into reusable platform components and a shared scoring model.</li>
+              <li><strong>Security hardening.</strong> Centralized secrets management; drove static-analysis and compliance — Spring / security upgrades, OWASP ZAP, OAuth + CSP hardening.</li>
             </ul>
           </div>
 
@@ -661,13 +661,13 @@
 
           <div class="tl-role">
             <div class="tl-role-header">
-              <span class="tl-role-title">Software Consulting Engineer III → IV — CX Collaboration, CDCoE</span>
+              <span class="tl-role-title">Software Consulting Engineer III → IV — CX Collaboration</span>
               <span class="tl-role-dates">Nov 2018 – Feb 2022</span>
             </div>
-            <p class="tl-role-desc">Engineering lead on the Collaboration Workflow Manager (CWM) — Cisco CDCoE's enterprise platform for provisioning users onto Cisco collaboration infrastructure for a Big Four U.S. bank and a global technology company. Promoted SCE III → IV in Apr 2021.</p>
+            <p class="tl-role-desc">Engineering lead on an enterprise collaboration-provisioning platform serving a Big Four U.S. bank and a global technology company. Promoted SCE III → IV in Apr 2021.</p>
             <ul class="tl-bullets">
-              <li><strong>CWM architecture lead.</strong> Owned data-extraction and data-aggregation microservices; drove cluster consolidation and data-migration services. Led customer rollouts for a Big Four U.S. bank and a global technology company.</li>
-              <li><strong>Webex Contact Center dashboard.</strong> Designed and shipped end-to-end independently (Angular + Spring Cloud + MongoDB) — live agent, queue, and contact metrics for Webex CC customers.</li>
+              <li><strong>Architecture lead.</strong> Owned the data-extraction and data-aggregation services; drove cluster consolidation, data-migration services, and major enterprise customer rollouts.</li>
+              <li><strong>Real-time metrics dashboard.</strong> Designed and shipped a full-stack, live operations dashboard end-to-end (Angular + Spring Cloud + MongoDB).</li>
             </ul>
           </div>
 
