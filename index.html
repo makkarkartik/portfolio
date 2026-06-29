@@ -311,6 +311,12 @@
     .results-cta:hover .arrow { transform: translateX(4px); }
     @media (max-width: 560px) { .results-cta { flex-direction: column; align-items: flex-start; gap: 8px; } }
 
+    /* résumé viewer modal */
+    .modal.modal-viewer { max-width: min(920px, 94vw); width: 100%; }
+    .resume-frame-wrap { margin-top: 12px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: #525659; }
+    .resume-frame { width: 100%; height: min(78vh, 1000px); border: 0; display: block; }
+    .viewer-note { font-size: 12px; color: var(--text-3); margin-top: 10px; text-align: center; }
+
     /* ── TIMELINE ───────────────────────────────────────── */
     .timeline { display: flex; flex-direction: column; gap: 0; }
 
@@ -541,7 +547,7 @@
       Get in touch
     </a>
     <button type="button" class="btn-ghost" onclick="openResumeModal()">
-      Request résumé
+      View résumé
     </button>
   </div>
 
@@ -810,40 +816,17 @@
   <a href="https://linkedin.com/in/makkarkartik" target="_blank" rel="noopener">linkedin.com/in/makkarkartik</a>
 </footer>
 
-<!-- RÉSUMÉ REQUEST MODAL -->
+<!-- RÉSUMÉ VIEWER MODAL -->
 <div class="modal-overlay" id="resumeOverlay" onclick="if(event.target===this)closeResumeModal()">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resumeModalTitle">
+  <div class="modal modal-viewer" role="dialog" aria-modal="true" aria-labelledby="resumeModalTitle">
     <div class="modal-head">
-      <h2 class="modal-title" id="resumeModalTitle">Request my résumé</h2>
+      <h2 class="modal-title" id="resumeModalTitle">Résumé</h2>
       <button type="button" class="modal-close" aria-label="Close" onclick="closeResumeModal()">&times;</button>
     </div>
-    <p class="modal-sub">Send a short note and I'll share the polished résumé with you directly after I review your request.</p>
-
-    <form id="resumeForm">
-      <!-- Web3Forms access key — replace with your own key from https://web3forms.com -->
-      <input type="hidden" name="access_key" value="YOUR_WEB3FORMS_ACCESS_KEY" />
-      <input type="hidden" name="subject" value="Résumé request from portfolio site" />
-      <input type="hidden" name="from_name" value="Portfolio — résumé request" />
-      <!-- Honeypot: bots fill this; humans don't. Submissions with it set are ignored. -->
-      <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" style="display:none" />
-
-      <div class="field">
-        <label for="rf-name">Name</label>
-        <input id="rf-name" type="text" name="name" required autocomplete="name" />
-      </div>
-      <div class="field">
-        <label for="rf-email">Email</label>
-        <input id="rf-email" type="email" name="email" required autocomplete="email" />
-      </div>
-      <div class="field">
-        <label for="rf-reason">Why are you interested? <span style="color:var(--text-3)">(optional)</span></label>
-        <textarea id="rf-reason" name="reason" placeholder="Role, company, or what you'd like to learn more about"></textarea>
-      </div>
-
-      <button type="submit" class="btn-primary" id="rf-submit">Send request</button>
-      <p class="form-note">I'll only use your details to respond to this request. No list, no sharing.</p>
-      <p class="form-status" id="rf-status" role="status" aria-live="polite"></p>
-    </form>
+    <div class="resume-frame-wrap">
+      <iframe id="resumeFrame" class="resume-frame" title="Kartik Makkar — résumé" src="" loading="lazy"></iframe>
+    </div>
+    <p class="viewer-note">View only. To discuss a role or request a copy, please connect on LinkedIn or get in touch.</p>
   </div>
 </div>
 
@@ -878,16 +861,16 @@
 
   document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 
-  // ── Résumé request modal ────────────────────────────
+  // ── Résumé viewer modal ─────────────────────────────
   const resumeOverlay = document.getElementById('resumeOverlay');
-  const resumeForm = document.getElementById('resumeForm');
-  const rfStatus = document.getElementById('rf-status');
-  const rfSubmit = document.getElementById('rf-submit');
+  const resumeFrame = document.getElementById('resumeFrame');
+  // #toolbar=0&navpanes=0 hides the built-in PDF download/print toolbar (Chrome/Edge); view-only intent.
+  const RESUME_SRC = 'Kartik_Makkar_Resume.pdf#toolbar=0&navpanes=0&view=FitH';
 
   function openResumeModal() {
+    if (resumeFrame && !resumeFrame.getAttribute('src')) resumeFrame.setAttribute('src', RESUME_SRC); // lazy-load on first open
     resumeOverlay.classList.add('open');
     document.body.style.overflow = 'hidden';
-    document.getElementById('rf-name').focus();
   }
   function closeResumeModal() {
     resumeOverlay.classList.remove('open');
@@ -895,39 +878,6 @@
   }
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && resumeOverlay.classList.contains('open')) closeResumeModal();
-  });
-
-  function setStatus(msg, kind) {
-    rfStatus.textContent = msg;
-    rfStatus.className = 'form-status show ' + kind;
-  }
-
-  resumeForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    rfSubmit.disabled = true;
-    rfSubmit.textContent = 'Sending…';
-    rfStatus.className = 'form-status';
-    try {
-      const res = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Accept': 'application/json' },
-        body: new FormData(resumeForm),
-      });
-      const data = await res.json();
-      if (data.success) {
-        resumeForm.reset();
-        setStatus("Thanks — your request is in. I'll review it and get back to you by email.", 'ok');
-        rfSubmit.textContent = 'Sent ✓';
-      } else {
-        setStatus(data.message || 'Something went wrong. Please email me directly instead.', 'err');
-        rfSubmit.disabled = false;
-        rfSubmit.textContent = 'Send request';
-      }
-    } catch (err) {
-      setStatus('Network error. Please email me directly instead.', 'err');
-      rfSubmit.disabled = false;
-      rfSubmit.textContent = 'Send request';
-    }
   });
 </script>
 
