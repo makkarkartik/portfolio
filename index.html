@@ -291,6 +291,25 @@
       transition: all var(--transition);
     }
     .card-link:hover { background: var(--accent-bg); border-color: var(--accent-glow); }
+    .card-link.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .card-link.primary:hover { filter: brightness(1.08); box-shadow: 0 4px 16px var(--accent-glow); }
+
+    /* drill-down to results: clickable metrics + an encouraging CTA banner */
+    a.metrics-link { display: block; text-decoration: none; }
+    a.metrics-link .metric { transition: all var(--transition); }
+    a.metrics-link:hover .metric { border-color: var(--accent); transform: translateY(-2px); }
+    .results-cta {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      background: var(--accent-bg); border: 1px solid var(--accent-glow); border-radius: 8px;
+      padding: 13px 18px; margin: 0 0 20px; text-decoration: none; transition: all var(--transition);
+    }
+    .results-cta:hover { border-color: var(--accent); box-shadow: 0 6px 22px var(--accent-glow); transform: translateY(-1px); }
+    .results-cta .rc-text { font-size: 13.5px; color: var(--text-2); line-height: 1.5; }
+    .results-cta .rc-text strong { color: var(--text); font-weight: 600; }
+    .results-cta .rc-go { font-size: 13px; font-weight: 700; color: var(--accent); white-space: nowrap; display: inline-flex; align-items: center; gap: 7px; }
+    .results-cta .arrow { display: inline-block; transition: transform var(--transition); }
+    .results-cta:hover .arrow { transform: translateX(4px); }
+    @media (max-width: 560px) { .results-cta { flex-direction: column; align-items: flex-start; gap: 8px; } }
 
     /* ── TIMELINE ───────────────────────────────────────── */
     .timeline { display: flex; flex-direction: column; gap: 0; }
@@ -545,6 +564,7 @@
         on answering, and <strong>decisively wins calibration</strong> — knowing when to refuse.
       </p>
 
+      <a class="metrics-link" href="hcft.html" aria-label="Open the full results dashboard">
       <div class="metrics">
         <div class="metric">
           <div class="metric-val">79.5%</div>
@@ -559,6 +579,12 @@
           <div class="metric-lbl">RAGAS faithfulness — most grounded</div>
         </div>
       </div>
+      </a>
+
+      <a class="results-cta" href="hcft.html">
+        <span class="rc-text"><strong>See the full evaluation</strong> — interactive charts, the answer/refuse confusion matrix, the bias-balanced judge panel &amp; RAGAS.</span>
+        <span class="rc-go">Open dashboard <span class="arrow">→</span></span>
+      </a>
 
       <ul class="research-bullets">
         <li><strong>Calibration — the deployable edge.</strong> Over <strong>all 1,880 test cases</strong>, the 12B leads balanced answer/refuse accuracy <strong>79.5% vs 67.4% / 57.3%</strong> and correctly refuses <strong>74% of unanswerable questions vs the full frontier's 16%</strong> (which hallucinates an answer to 84% of them) — the no-hallucination property a high-stakes RAG copilot needs.</li>
@@ -568,7 +594,7 @@
       </ul>
 
       <div class="card-links">
-        <a href="hcft.html" class="card-link">View results dashboard ↗</a>
+        <a href="hcft.html" class="card-link primary">View results dashboard ↗</a>
         <a href="https://github.com/makkarkartik" class="card-link">GitHub ↗</a>
       </div>
     </div>
@@ -625,7 +651,7 @@
               <span class="tl-role-title">Software Consulting Engineer IV — AppDynamics, Customer Engineering</span>
               <span class="tl-role-dates">Feb 2022 – Sep 2022</span>
             </div>
-            <p class="tl-role-desc">Customer-facing engineering-consulting role on observability strategy for enterprise customers: Tech Mahindra, Fastenal, Carnival, RNDC.</p>
+            <p class="tl-role-desc">Customer-facing engineering-consulting role on observability strategy for large enterprise customers across telecom, distribution, and travel.</p>
             <ul class="tl-bullets">
               <li><strong>Technical SME.</strong> Embedded with enterprise AppDynamics customers as architecture-level SME. Codified KPIs with engineering leadership, engaged C-suite to capture the observability vision, translated it into engineering requirements through delivery. Earned top-quartile bonus and a formal recommendation from the engineering lead.</li>
             </ul>
@@ -638,9 +664,9 @@
               <span class="tl-role-title">Software Consulting Engineer III → IV — CX Collaboration, CDCoE</span>
               <span class="tl-role-dates">Nov 2018 – Feb 2022</span>
             </div>
-            <p class="tl-role-desc">Engineering lead on the Collaboration Workflow Manager (CWM) — Cisco CDCoE's enterprise platform for provisioning users onto Cisco collaboration infrastructure for Bank of America and Apple. Promoted SCE III → IV in Apr 2021.</p>
+            <p class="tl-role-desc">Engineering lead on the Collaboration Workflow Manager (CWM) — Cisco CDCoE's enterprise platform for provisioning users onto Cisco collaboration infrastructure for a Big Four U.S. bank and a global technology company. Promoted SCE III → IV in Apr 2021.</p>
             <ul class="tl-bullets">
-              <li><strong>CWM architecture lead.</strong> Owned data-extraction and data-aggregation microservices; drove cluster consolidation and data-migration services. Led customer rollouts for Bank of America and Apple.</li>
+              <li><strong>CWM architecture lead.</strong> Owned data-extraction and data-aggregation microservices; drove cluster consolidation and data-migration services. Led customer rollouts for a Big Four U.S. bank and a global technology company.</li>
               <li><strong>Webex Contact Center dashboard.</strong> Designed and shipped end-to-end independently (Angular + Spring Cloud + MongoDB) — live agent, queue, and contact metrics for Webex CC customers.</li>
             </ul>
           </div>
@@ -658,11 +684,11 @@
         <div class="tl-roles">
           <div class="tl-role">
             <div class="tl-role-header">
-              <span class="tl-role-title">Backend / Systems Engineer — JPMorgan Chase provisioning platform</span>
+              <span class="tl-role-title">Backend / Systems Engineer — Global-bank provisioning platform</span>
               <span class="tl-role-dates">2011 – 2017 · Bangalore</span>
             </div>
             <ul class="tl-bullets">
-              <li>Built Java + jBPM workflow scripts and Spring REST + SOAP-WS APIs for JPMorgan Chase's enterprise provisioning platform. Processed <strong>500K+ requests</strong> across a 5-year engagement. Promoted twice; relocated to the US in 2017.</li>
+              <li>Built Java + jBPM workflow scripts and Spring REST + SOAP-WS APIs for a major global bank's enterprise provisioning platform. Processed <strong>500K+ requests</strong> across a 5-year engagement. Promoted twice; relocated to the US in 2017.</li>
             </ul>
           </div>
           <hr class="tl-divider" />
@@ -672,7 +698,7 @@
               <span class="tl-role-dates">2017 – 2018 · SF Bay Area</span>
             </div>
             <ul class="tl-bullets">
-              <li>Continued the JPMorgan Chase engagement from the US delivery center; owned 100% of usability improvements; delivered a complete UI redesign and the platform's log-management system.</li>
+              <li>Continued the major-bank engagement from the US delivery center; owned 100% of usability improvements; delivered a complete UI redesign and the platform's log-management system.</li>
             </ul>
           </div>
         </div>
