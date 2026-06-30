@@ -123,6 +123,7 @@
     <a href="#calibration">Calibration</a>
     <a href="#panel">Judge panel</a>
     <a href="#ragas">RAGAS</a>
+    <a href="#data">Data</a>
     <a href="#method">Method</a>
   </div>
 </div></nav>
@@ -292,6 +293,41 @@
       teacher's phrasing. Overlap was measuring <strong>stylistic mimicry, not correctness</strong>. Every instrument
       above exists to replace that flattering number with one I can defend.</p>
   </div>
+</section>
+
+<!-- TRAINING DATA -->
+<section id="data">
+  <p class="kicker">Before the model — the data</p>
+  <h2>Training data, engineered to be trustworthy</h2>
+  <p class="sub">The training set is <strong>LLM-generated</strong> — so the real question is why you'd trust a word of it.
+    I treated the generator as untrusted and ran every row through a chain of deterministic gates. ~8,500 examples
+    survived; the rest were dropped, or <em>recycled into refusal signal</em>.</p>
+
+  <div class="callout">
+    <p style="margin:0 0 8px"><strong>RAFT on the retriever's real output.</strong> Every example is built from the
+      <em>actual</em> top-5 chunks the frozen retriever returns for that question — its real near-misses and noise — so the
+      training distribution <b>is</b> the deployment distribution. The ~22% of questions whose answer <em>isn't</em> in the
+      retrieved context become <b>refusal examples</b>: plausible, on-topic hard negatives, not synthetic swaps.</p>
+    <p style="margin:0;color:var(--muted)">That real-miss refusal signal is where the calibration win at the top comes from.</p>
+  </div>
+
+  <p class="sub" style="margin-top:22px">Every row had to clear a chain of checks before it counted as <strong>grounded</strong>:</p>
+  <ul class="note" style="padding-left:18px;line-height:1.85">
+    <li><strong>Validated generator + specificity.</strong> Questions must anchor to a distinctive fact (a county, a year, a
+      metric) so they target a specific factoid rather than being vaguely answerable.</li>
+    <li><strong>Verbatim quote-gate.</strong> The generator must return the exact supporting quote; any row whose quote
+      isn't found verbatim in the source is dropped — a free hallucination filter.</li>
+    <li><strong>Gold-blind retrieval round-trip.</strong> The question alone, run back through the retriever, must surface its
+      own source chunk in the top-5 — an independent check that the question really is about that content.</li>
+    <li><strong>Two-lock grounded test.</strong> A row is grounded only if (1) its source chunk is retrieved <em>and</em>
+      (2) its supporting quote survives verbatim into the <em>assembled</em> context the model actually trains on. Rows that
+      fail the second lock become refusals — if the evidence isn't there, the model should abstain.</li>
+  </ul>
+
+  <p class="note" style="margin-top:18px"><strong>Composition:</strong> ~8,500 training rows at the natural ~78:22
+    grounded-to-refusal ratio (no resampling), held out by <strong>hospital-level split</strong> with <strong>zero
+    train/test overlap</strong> — so the headline measures generalization, not memorization. The honest gap I'd close next:
+    an explicit entailment check that each question matches its quote.</p>
 </section>
 
 <!-- METHOD -->
