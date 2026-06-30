@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <title>Kartik Makkar — Senior AI/ML Engineer & Software Architect</title>
   <meta name="description" content="Senior AI/ML Engineer & Software Architect with 14+ years delivering scalable production systems. Software Architect at Cisco. M.S. CS (AI), Georgia Tech." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -180,6 +181,19 @@
       transition: all var(--transition);
     }
     .btn-ghost:hover { border-color: var(--border-hv); color: var(--text); }
+    .btn-accent {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 10px 20px;
+      background: var(--accent-bg);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      font-size: 13px; font-weight: 600;
+      text-decoration: none; cursor: pointer; font-family: inherit;
+      transition: all var(--transition);
+    }
+    .btn-accent:hover { background: var(--accent); color: #fff; transform: translateY(-1px); }
+    .btn-accent svg { width: 14px; height: 14px; }
 
     /* stats strip */
     .stats {
@@ -563,8 +577,9 @@
     <a href="mailto:kartikmakkar.in@gmail.com" class="btn-ghost">
       Get in touch
     </a>
-    <button type="button" class="btn-ghost" onclick="openResumeModal()">
-      Resume
+    <button type="button" class="btn-accent" onclick="openResumeModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      View Resume
     </button>
   </div>
 
