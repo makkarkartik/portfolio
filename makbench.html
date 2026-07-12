@@ -249,11 +249,13 @@
         <th data-k="mean_correctness">correctness</th>
         <th data-k="cost_of_success">cost / success</th>
         <th data-k="s">time (s)</th>
+        <th data-k="ti">tokens in / out</th>
+        <th data-k="calls">calls</th>
       </tr></thead>
       <tbody id="rows"></tbody>
     </table>
   </div>
-  <p class="note" style="margin-top:14px;font-size:12.5px">Cost is metered per-token from the gateway; Gemma runs on a flat-rate plan and shows <span class="mono">~</span> (excluded from cost ranking). <span class="mono">pass^5</span> only applies to the 5-trial view.</p>
+  <p class="note" style="margin-top:14px;font-size:12.5px">Cost, tokens and calls are metered at the gateway — never self-reported. <span class="mono">tokens in/out</span>, <span class="mono">calls</span> and <span class="mono">time</span> are per-attempt averages; <span class="mono">tokens in</span> counts every billed input token, so agents that re-read the whole transcript each turn show it. Gemma runs on a flat-rate plan and shows <span class="mono">~</span> (excluded from cost ranking). <span class="mono">pass^5</span> only applies to the 5-trial view.</p>
 
   <h3 style="margin:36px 0 6px;font-size:17px">Which tasks are hard — task × model</h3>
   <p class="note" style="margin:0 0 14px;font-size:13px">Every task against every published run in the current view,
@@ -484,6 +486,7 @@ const TELEM={"openclaw|Sonnet 5|1":{"s":39.9,"ti":234892,"to":2712,"calls":8.0,"
   }
 
   function fmtCost(c){ if(c.basis==="flat_rate")return '<span class="muted mono">~ flat</span>'; return c.cost_of_success==null?"∞":"$"+c.cost_of_success.toFixed(3); }
+  const fmtK=x=>x==null?"—":x>=1000?(x/1000).toFixed(x>=10000?0:1)+"k":String(x);
   function scoreClass(v){ return v>=0.8?"good":v>=0.5?"":"bad"; }
 
   function drawTable(){
@@ -504,7 +507,9 @@ const TELEM={"openclaw|Sonnet 5|1":{"s":39.9,"ti":234892,"to":2712,"calls":8.0,"
         <td class="num">${p5}</td>
         <td class="num">${c.mean_correctness.toFixed(2)}</td>
         <td class="num">${fmtCost(c)}</td>
-        <td class="num">${c.s!=null?c.s.toFixed(1):'—'}</td>`;
+        <td class="num">${c.s!=null?c.s.toFixed(1):'—'}</td>
+        <td class="num">${fmtK(c.ti)} / ${fmtK(c.to)}</td>
+        <td class="num">${c.calls!=null?c.calls.toFixed(1):'—'}</td>`;
       const ex=document.createElement("tr"); ex.className="expr"; ex.style.display="none";
       let chips;
       if(state.trials==="5"&&c.tasks5){
@@ -517,11 +522,10 @@ const TELEM={"openclaw|Sonnet 5|1":{"s":39.9,"ti":234892,"to":2712,"calls":8.0,"
       const head = state.trials==="5"
         ? `${c.tasks5.filter(t=>t.passes===t.n).length}/10 tasks pass all 5 · ${AName[c.agent]} × ${c.model_label} (${c.n} attempts)`
         : `${c.passes}/${c.n} tasks passed · ${AName[c.agent]} × ${c.model_label}`;
-      const fmtK=x=>x>=1000?(x/1000).toFixed(x>=10000?0:1)+"k":String(x);
       const tele = c.s!=null
         ? `<div class="eh" style="margin-top:2px;color:var(--muted);font-weight:400">per attempt: <b style="color:var(--text)">${c.s.toFixed(1)}s</b> active · <b style="color:var(--text)">${fmtK(c.ti)}</b> tokens in / <b style="color:var(--text)">${fmtK(c.to)}</b> out · <b style="color:var(--text)">${c.calls}</b> model calls · ${c.ca?'<b style="color:var(--text)">$'+c.ca.toFixed(3)+'</b>':'<span class="mono">~ flat</span>'}</div>`
         : "";
-      ex.innerHTML=`<td colspan="7"><div class="expin"><div class="eh">${head}</div>${tele}<div class="tgrid">${chips}</div></div></td>`;
+      ex.innerHTML=`<td colspan="9"><div class="expin"><div class="eh">${head}</div>${tele}<div class="tgrid">${chips}</div></div></td>`;
       const tog=()=>{ex.style.display=ex.style.display==="none"?"table-row":"none";};
       tr.addEventListener("click",tog);
       tr.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tog();}});
