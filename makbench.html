@@ -110,6 +110,16 @@
   .hpart{color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent)}
   .hbad{color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}
   @media(max-width:760px){.taskgrid{grid-template-columns:1fr}}
+  /* pass@1 vs pass^5 cube lattices: x=depth(trials, drawn up-right), y=tasks */
+  .cubegrid{display:flex;flex-wrap:wrap;gap:20px 12px;justify-content:space-between;margin-top:6px}
+  .clat{position:relative;width:118px;height:214px}
+  .clat .tile{position:absolute;width:17px;height:9px;border-radius:2px;border:1px solid var(--bg);box-sizing:border-box;transition:background .25s,opacity .25s}
+  .clat .tile.on{background:var(--good)}
+  .clat .tile.off{background:var(--bad)}
+  .clat .tile.ghost{background:transparent;border:1px solid var(--border);opacity:.55}
+  .clat .cml{position:absolute;left:0;right:0;bottom:26px;text-align:center;font-size:11.5px;font-weight:600;color:var(--text);line-height:1.15}
+  .clat .cmv{position:absolute;left:0;right:0;bottom:0;text-align:center;font-family:ui-monospace,monospace;font-size:15px;font-weight:700;color:var(--accent)}
+  @media(max-width:760px){.cubegrid{justify-content:flex-start;gap:18px 22px}}
   .legend{display:flex;gap:16px;align-items:center;margin-left:auto;font-size:12.5px;color:var(--muted)}
   .legend .k{display:inline-flex;align-items:center;gap:6px}
   .legend .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
@@ -286,6 +296,22 @@
     its one hard failure (expense-audit, 0/5) is the 32K-context ceiling of its flat-rate host, not bad luck.
     These numbers are reproducible and cost-honest — same sandbox, same fixture, every dollar metered.
     <em>(OpenClaw's 5-trial run is still to land.)</em></p>
+
+  <h3 style="margin:34px 0 6px;font-size:17px">See it: the same 300 attempts, two counting rules</h3>
+  <p class="note" style="margin:0 0 14px;font-size:13px">Every block below is one real graded attempt from the
+    ZeptoClaw reliability run. Each lattice is one model: <b style="color:var(--text)">rows ↓ are the 10 tasks</b>,
+    <b style="color:var(--text)">depth ↗ is the 5 trials</b>. Green passed, red failed. Flip the lens:</p>
+  <div class="controls" style="margin:0 0 4px">
+    <div class="cg"><span class="cl">Lens</span>
+      <div class="seg" id="fLens" role="group" aria-label="Counting rule">
+        <button data-v="p1" aria-pressed="true">pass@1 · count every block</button>
+        <button data-v="p5" aria-pressed="false">pass^5 · all five or nothing</button>
+      </div>
+    </div>
+  </div>
+  <p class="note" id="cubeNote" style="font-size:12.5px;margin:10px 0 4px"></p>
+  <div id="cube" class="cubegrid"></div>
+  <p class="axis" style="margin-top:8px">hover any block for task · trials passed</p>
 </section>
 
 <!-- HOW -->
@@ -546,6 +572,36 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
       return `<tr><td class="name" style="font-family:ui-monospace,monospace;font-size:12px;white-space:nowrap">${r.id}</td>${tds}<td class="hcell"><b>${Math.round(r.avg*100)}%</b></td></tr>`;
     }).join("");
   }
+
+  // ---- pass@1 vs pass^5 cube lattices: the real 5-trial attempts, two counting rules ----
+  // Oblique projection with plain divs: tile(task r, trial t) sits at x=t*dx, y=r*dy-t*dz.
+  // Per-trial pass ORDER isn't stored (only k-of-5 counts); both metrics are order-blind,
+  // so tiles 0..k-1 render as passes — faithful to the math, deterministic to draw.
+  function drawCube(mode){
+    const host=$("#cube"); host.innerHTML="";
+    const dx=5,dy=13,dz=4,top=22;
+    Object.entries(DATA.fiveTrial).forEach(([label,d])=>{
+      let tiles="";
+      d.tasks.forEach((tk,r)=>{
+        const solid = mode==="p1" || tk.passes===tk.n;   // p5 lens: broken stacks go ghost
+        for(let t=tk.n-1;t>=0;t--){                      // back-to-front so trial 0 sits on top
+          const pass=t<tk.passes;
+          const cls = pass ? (solid?"on":"ghost") : "off";
+          tiles+=`<div class="tile ${cls}" style="left:${34+t*dx}px;top:${top+r*dy-t*dz+dz*4}px" title="${tk.task} · ${tk.passes}/${tk.n} trials passed"></div>`;
+        }
+      });
+      const v = mode==="p1" ? d.pass_at_1 : d.pass_hat_5;
+      host.insertAdjacentHTML("beforeend",
+        `<div class="clat">${tiles}<div class="cml">${label}</div><div class="cmv">${v.toFixed(2)}</div></div>`);
+    });
+    $("#cubeNote").innerHTML = mode==="p1"
+      ? "<b>pass@1 counts every block equally:</b> green blocks ÷ 50. A task that passes 3 of 5 trials contributes 3 greens — partial reliability still earns partial score."
+      : "<b>pass^5 collapses each 5-deep stack:</b> one red anywhere and the whole stack is hollowed out — its greens no longer count. Score = intact stacks ÷ 10 tasks. Watch Nemotron and Gemma drop; sol and Flash don’t move.";
+  }
+  document.querySelectorAll("#fLens button").forEach(b=>b.addEventListener("click",()=>{
+    setSeg("fLens","lens",b.dataset.v); drawCube(b.dataset.v);
+  }));
+  drawCube("p1");
 
   // One plain-English sentence for the selected metric in the selected view — the same
   // number means subtly different things at 1 vs 5 trials, so say which.
