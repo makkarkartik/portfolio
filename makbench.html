@@ -97,6 +97,7 @@
   .seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:12.5px;padding:6px 12px;border-radius:6px;cursor:pointer;white-space:nowrap;transition:all var(--transition)}
   .seg button[aria-pressed="true"]{background:var(--accent-bg);color:var(--accent);font-weight:600;box-shadow:inset 0 0 0 1px var(--accent-glow)}
   .seg button:disabled{opacity:.35;cursor:not-allowed}
+  #board.solo th:first-child,#board.solo td.name:first-child{display:none}
   .legend{display:flex;gap:16px;align-items:center;margin-left:auto;font-size:12.5px;color:var(--muted)}
   .legend .k{display:inline-flex;align-items:center;gap:6px}
   .legend .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
@@ -169,7 +170,7 @@
     <div class="stat"><div class="v">2</div><div class="l">Agents compared head-to-head</div></div>
     <div class="stat"><div class="v">9</div><div class="l">LLMs under test across 5 providers</div></div>
     <div class="stat"><div class="v">10</div><div class="l">Enterprise tool-use tasks</div></div>
-    <div class="stat"><div class="v">390</div><div class="l">Graded, cost-metered attempts</div></div>
+    <div class="stat"><div class="v">440</div><div class="l">Graded, cost-metered attempts</div></div>
   </div>
 </header>
 
@@ -177,29 +178,23 @@
 <section id="results">
   <p class="kicker">1 · Results explorer</p>
   <h2>ZeptoClaw vs OpenClaw, model by model</h2>
-  <p class="sub">Switch between the <strong>1-trial</strong> cross-agent comparison and the <strong>5-trial</strong>
-    reliability view, filter by agent, change the metric, and click any row for the per-task breakdown.</p>
+  <p class="sub">Two views: a <strong>head-to-head</strong> of both agents across nine models (1 trial), and a
+    <strong>reliability deep-dive</strong> where every task runs 5× (ZeptoClaw, six models). Pick a metric,
+    and <strong>click any row in the table for the per-task breakdown</strong>.</p>
 
   <div class="callout" id="viewNote"></div>
 
   <div class="controls" style="margin-top:22px">
-    <div class="cg"><span class="cl">Trials</span>
-      <div class="seg" id="fTrials" role="group" aria-label="Trials">
-        <button data-v="1" aria-pressed="true">1 trial</button>
-        <button data-v="5" aria-pressed="false">5 trials</button>
-      </div>
-    </div>
-    <div class="cg"><span class="cl">Agent</span>
-      <div class="seg" id="fAgent" role="group" aria-label="Filter by agent">
-        <button data-v="all" aria-pressed="true">All</button>
-        <button data-v="openclaw" aria-pressed="false">OpenClaw</button>
-        <button data-v="zeptoclaw" aria-pressed="false">ZeptoClaw</button>
+    <div class="cg"><span class="cl">View</span>
+      <div class="seg" id="fView" role="group" aria-label="View">
+        <button data-v="1" aria-pressed="true">Head-to-head · 1 trial</button>
+        <button data-v="5" aria-pressed="false">Reliability · 5 trials</button>
       </div>
     </div>
     <div class="cg"><span class="cl">Metric</span>
       <div class="seg" id="fMetric" role="group" aria-label="Choose metric">
         <button data-v="pass_at_1" aria-pressed="true">pass@1</button>
-        <button data-v="pass_hat_5" aria-pressed="false" disabled>pass^5</button>
+        <button data-v="pass_hat_5" aria-pressed="false" hidden>pass^5</button>
         <button data-v="mean_correctness" aria-pressed="false">correctness</button>
         <button data-v="cost_of_success" aria-pressed="false">cost / success</button>
       </div>
@@ -240,8 +235,10 @@
     (its lone single-run miss was variance), while <strong>Nemotron's lucky 0.80 corrects to 0.64</strong> — and its
     <strong>pass^5 of 0.50</strong> reveals only half its tasks pass all five times. GPT-5.6 sol and Gemini 3.5 Flash are
     <strong>perfectly reliable (pass^5 = 1.0)</strong>. That's the whole point of multiple trials: <strong>pass@1</strong>
-    asks "can it?", <strong>pass^5</strong> asks "can I rely on it?". These numbers are reproducible and cost-honest —
-    same sandbox, same fixture, every dollar metered. <em>(OpenClaw's 5-trial run and Gemma's are still to land.)</em></p>
+    asks "can it?", <strong>pass^5</strong> asks "can I rely on it?". Gemma 4 31B lands at <strong>0.82 / pass^5 0.70</strong> —
+    its one hard failure (expense-audit, 0/5) is the 32K-context ceiling of its flat-rate host, not bad luck.
+    These numbers are reproducible and cost-honest — same sandbox, same fixture, every dollar metered.
+    <em>(OpenClaw's 5-trial run is still to land.)</em></p>
 </section>
 
 <!-- HOW -->
@@ -382,18 +379,18 @@ crmctl.py <span class="hi">update</span> &lt;id&gt; --stage &lt;s&gt; [--close-d
 
 <script>
 const DATA = {"cells":[{"agent":"openclaw","model_label":"Opus 4.8","provider":"Anthropic","basis":"per_token","n":10,"passes":9,"pass_at_1":0.9,"mean_correctness":0.93,"cost_of_success":1.0824,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":0.3,"passed":false},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"openclaw","model_label":"Sonnet 5","provider":"Anthropic","basis":"per_token","n":10,"passes":8,"pass_at_1":0.8,"mean_correctness":0.83,"cost_of_success":0.6211,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":0.0,"passed":false},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":0.3,"passed":false},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"openclaw","model_label":"GPT-5.4 mini","provider":"OpenAI","basis":"per_token","n":10,"passes":5,"pass_at_1":0.5,"mean_correctness":0.6,"cost_of_success":0.0354,"tasks":[{"task":"calendar-deconflict","correctness":0.2,"passed":false},{"task":"contract-renewal-sweep","correctness":0.5,"passed":false},{"task":"crm-pipeline-update","correctness":0.0,"passed":false},{"task":"expense-audit","correctness":0.0,"passed":false},{"task":"filesystem-reorg","correctness":0.3,"passed":false},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"openclaw","model_label":"GPT-5.6 sol","provider":"OpenAI","basis":"per_token","n":10,"passes":10,"pass_at_1":1.0,"mean_correctness":1.0,"cost_of_success":0.1375,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"openclaw","model_label":"Gemini 3.1 Pro","provider":"Google","basis":"per_token","n":10,"passes":10,"pass_at_1":1.0,"mean_correctness":1.0,"cost_of_success":0.1353,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"openclaw","model_label":"Gemini 3.5 Flash","provider":"Google","basis":"per_token","n":10,"passes":9,"pass_at_1":0.9,"mean_correctness":0.9,"cost_of_success":0.2131,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":0.0,"passed":false},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"openclaw","model_label":"Gemma 4 31B","provider":"Featherless","basis":"flat_rate","n":10,"passes":8,"pass_at_1":0.8,"mean_correctness":0.82,"cost_of_success":null,"tasks":[{"task":"calendar-deconflict","correctness":0.2,"passed":false},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":0.0,"passed":false}]},{"agent":"openclaw","model_label":"Nemotron 3 Ultra","provider":"Fireworks","basis":"per_token","n":10,"passes":4,"pass_at_1":0.4,"mean_correctness":0.51,"cost_of_success":0.2006,"tasks":[{"task":"calendar-deconflict","correctness":0.2,"passed":false},{"task":"contract-renewal-sweep","correctness":0.5,"passed":false},{"task":"crm-pipeline-update","correctness":0.4,"passed":false},{"task":"expense-audit","correctness":0.0,"passed":false},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":0.0,"passed":false},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":0.0,"passed":false}]},{"agent":"zeptoclaw","model_label":"Sonnet 5","provider":"Anthropic","basis":"per_token","n":10,"passes":8,"pass_at_1":0.8,"mean_correctness":0.8,"cost_of_success":0.1175,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":0.0,"passed":false},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":0.0,"passed":false},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"zeptoclaw","model_label":"GPT-5.6 sol","provider":"OpenAI","basis":"per_token","n":10,"passes":10,"pass_at_1":1.0,"mean_correctness":1.0,"cost_of_success":0.0559,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"zeptoclaw","model_label":"GPT-5.6 terra","provider":"OpenAI","basis":"per_token","n":10,"passes":9,"pass_at_1":0.9,"mean_correctness":0.95,"cost_of_success":0.025,"tasks":[{"task":"calendar-deconflict","correctness":0.5,"passed":false},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"zeptoclaw","model_label":"Gemini 3.5 Flash","provider":"Google","basis":"per_token","n":10,"passes":10,"pass_at_1":1.0,"mean_correctness":1.0,"cost_of_success":0.1295,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"zeptoclaw","model_label":"Nemotron 3 Ultra","provider":"Fireworks","basis":"per_token","n":10,"passes":8,"pass_at_1":0.8,"mean_correctness":0.8,"cost_of_success":0.049,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":0.0,"passed":false,"flag":"transient"},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":0.0,"passed":false}]},{"agent":"zeptoclaw","model_label":"Gemma 4 31B","provider":"Featherless","basis":"flat_rate","n":10,"passes":8,"pass_at_1":0.8,"mean_correctness":0.92,"cost_of_success":null,"tasks":[{"task":"calendar-deconflict","correctness":0.5,"passed":false},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":0.7,"passed":false},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]}],
-"fiveTrial":{"Sonnet 5":{"provider":"Anthropic","pass_at_1":0.92,"pass_hat_5":0.8,"mean_correctness":0.92,"cost_of_success":0.1168,"n":50,"tasks":[{"task":"calendar-deconflict","passes":5,"n":5,"mc":1.0},{"task":"contract-renewal-sweep","passes":4,"n":5,"mc":0.8},{"task":"crm-pipeline-update","passes":5,"n":5,"mc":1.0},{"task":"expense-audit","passes":5,"n":5,"mc":1.0},{"task":"filesystem-reorg","passes":5,"n":5,"mc":1.0},{"task":"gmail-inbox-triage","passes":5,"n":5,"mc":1.0},{"task":"outlook-schedule-meeting","passes":2,"n":5,"mc":0.4},{"task":"quarterly-report-merge","passes":5,"n":5,"mc":1.0},{"task":"standup-digest","passes":5,"n":5,"mc":1.0},{"task":"support-ticket-routing","passes":5,"n":5,"mc":1.0}]},"GPT-5.6 sol":{"provider":"OpenAI","pass_at_1":1.0,"pass_hat_5":1.0,"mean_correctness":1.0,"cost_of_success":0.0469,"n":50,"tasks":[{"task":"calendar-deconflict","passes":5,"n":5,"mc":1.0},{"task":"contract-renewal-sweep","passes":5,"n":5,"mc":1.0},{"task":"crm-pipeline-update","passes":5,"n":5,"mc":1.0},{"task":"expense-audit","passes":5,"n":5,"mc":1.0},{"task":"filesystem-reorg","passes":5,"n":5,"mc":1.0},{"task":"gmail-inbox-triage","passes":5,"n":5,"mc":1.0},{"task":"outlook-schedule-meeting","passes":5,"n":5,"mc":1.0},{"task":"quarterly-report-merge","passes":5,"n":5,"mc":1.0},{"task":"standup-digest","passes":5,"n":5,"mc":1.0},{"task":"support-ticket-routing","passes":5,"n":5,"mc":1.0}]},"GPT-5.6 terra":{"provider":"OpenAI","pass_at_1":0.84,"pass_hat_5":0.8,"mean_correctness":0.874,"cost_of_success":0.0239,"n":50,"tasks":[{"task":"calendar-deconflict","passes":0,"n":5,"mc":0.2},{"task":"contract-renewal-sweep","passes":5,"n":5,"mc":1.0},{"task":"crm-pipeline-update","passes":5,"n":5,"mc":1.0},{"task":"expense-audit","passes":2,"n":5,"mc":0.54},{"task":"filesystem-reorg","passes":5,"n":5,"mc":1.0},{"task":"gmail-inbox-triage","passes":5,"n":5,"mc":1.0},{"task":"outlook-schedule-meeting","passes":5,"n":5,"mc":1.0},{"task":"quarterly-report-merge","passes":5,"n":5,"mc":1.0},{"task":"standup-digest","passes":5,"n":5,"mc":1.0},{"task":"support-ticket-routing","passes":5,"n":5,"mc":1.0}]},"Gemini 3.5 Flash":{"provider":"Google","pass_at_1":1.0,"pass_hat_5":1.0,"mean_correctness":1.0,"cost_of_success":0.1311,"n":50,"tasks":[{"task":"calendar-deconflict","passes":5,"n":5,"mc":1.0},{"task":"contract-renewal-sweep","passes":5,"n":5,"mc":1.0},{"task":"crm-pipeline-update","passes":5,"n":5,"mc":1.0},{"task":"expense-audit","passes":5,"n":5,"mc":1.0},{"task":"filesystem-reorg","passes":5,"n":5,"mc":1.0},{"task":"gmail-inbox-triage","passes":5,"n":5,"mc":1.0},{"task":"outlook-schedule-meeting","passes":5,"n":5,"mc":1.0},{"task":"quarterly-report-merge","passes":5,"n":5,"mc":1.0},{"task":"standup-digest","passes":5,"n":5,"mc":1.0},{"task":"support-ticket-routing","passes":5,"n":5,"mc":1.0}]},"Nemotron 3 Ultra":{"provider":"Fireworks","pass_at_1":0.64,"pass_hat_5":0.5,"mean_correctness":0.668,"cost_of_success":0.0556,"n":50,"tasks":[{"task":"calendar-deconflict","passes":3,"n":5,"mc":0.68},{"task":"contract-renewal-sweep","passes":1,"n":5,"mc":0.4},{"task":"crm-pipeline-update","passes":5,"n":5,"mc":1.0},{"task":"expense-audit","passes":5,"n":5,"mc":1.0},{"task":"filesystem-reorg","passes":5,"n":5,"mc":1.0},{"task":"gmail-inbox-triage","passes":0,"n":5,"mc":0.0},{"task":"outlook-schedule-meeting","passes":3,"n":5,"mc":0.6},{"task":"quarterly-report-merge","passes":5,"n":5,"mc":1.0},{"task":"standup-digest","passes":5,"n":5,"mc":1.0},{"task":"support-ticket-routing","passes":0,"n":5,"mc":0.0}]}}};
+"fiveTrial":{"Sonnet 5":{"provider":"Anthropic","pass_at_1":0.92,"pass_hat_5":0.8,"mean_correctness":0.92,"cost_of_success":0.1168,"n":50,"tasks":[{"task":"calendar-deconflict","passes":5,"n":5,"mc":1.0},{"task":"contract-renewal-sweep","passes":4,"n":5,"mc":0.8},{"task":"crm-pipeline-update","passes":5,"n":5,"mc":1.0},{"task":"expense-audit","passes":5,"n":5,"mc":1.0},{"task":"filesystem-reorg","passes":5,"n":5,"mc":1.0},{"task":"gmail-inbox-triage","passes":5,"n":5,"mc":1.0},{"task":"outlook-schedule-meeting","passes":2,"n":5,"mc":0.4},{"task":"quarterly-report-merge","passes":5,"n":5,"mc":1.0},{"task":"standup-digest","passes":5,"n":5,"mc":1.0},{"task":"support-ticket-routing","passes":5,"n":5,"mc":1.0}]},"GPT-5.6 sol":{"provider":"OpenAI","pass_at_1":1.0,"pass_hat_5":1.0,"mean_correctness":1.0,"cost_of_success":0.0469,"n":50,"tasks":[{"task":"calendar-deconflict","passes":5,"n":5,"mc":1.0},{"task":"contract-renewal-sweep","passes":5,"n":5,"mc":1.0},{"task":"crm-pipeline-update","passes":5,"n":5,"mc":1.0},{"task":"expense-audit","passes":5,"n":5,"mc":1.0},{"task":"filesystem-reorg","passes":5,"n":5,"mc":1.0},{"task":"gmail-inbox-triage","passes":5,"n":5,"mc":1.0},{"task":"outlook-schedule-meeting","passes":5,"n":5,"mc":1.0},{"task":"quarterly-report-merge","passes":5,"n":5,"mc":1.0},{"task":"standup-digest","passes":5,"n":5,"mc":1.0},{"task":"support-ticket-routing","passes":5,"n":5,"mc":1.0}]},"GPT-5.6 terra":{"provider":"OpenAI","pass_at_1":0.84,"pass_hat_5":0.8,"mean_correctness":0.874,"cost_of_success":0.0239,"n":50,"tasks":[{"task":"calendar-deconflict","passes":0,"n":5,"mc":0.2},{"task":"contract-renewal-sweep","passes":5,"n":5,"mc":1.0},{"task":"crm-pipeline-update","passes":5,"n":5,"mc":1.0},{"task":"expense-audit","passes":2,"n":5,"mc":0.54},{"task":"filesystem-reorg","passes":5,"n":5,"mc":1.0},{"task":"gmail-inbox-triage","passes":5,"n":5,"mc":1.0},{"task":"outlook-schedule-meeting","passes":5,"n":5,"mc":1.0},{"task":"quarterly-report-merge","passes":5,"n":5,"mc":1.0},{"task":"standup-digest","passes":5,"n":5,"mc":1.0},{"task":"support-ticket-routing","passes":5,"n":5,"mc":1.0}]},"Gemini 3.5 Flash":{"provider":"Google","pass_at_1":1.0,"pass_hat_5":1.0,"mean_correctness":1.0,"cost_of_success":0.1311,"n":50,"tasks":[{"task":"calendar-deconflict","passes":5,"n":5,"mc":1.0},{"task":"contract-renewal-sweep","passes":5,"n":5,"mc":1.0},{"task":"crm-pipeline-update","passes":5,"n":5,"mc":1.0},{"task":"expense-audit","passes":5,"n":5,"mc":1.0},{"task":"filesystem-reorg","passes":5,"n":5,"mc":1.0},{"task":"gmail-inbox-triage","passes":5,"n":5,"mc":1.0},{"task":"outlook-schedule-meeting","passes":5,"n":5,"mc":1.0},{"task":"quarterly-report-merge","passes":5,"n":5,"mc":1.0},{"task":"standup-digest","passes":5,"n":5,"mc":1.0},{"task":"support-ticket-routing","passes":5,"n":5,"mc":1.0}]},"Nemotron 3 Ultra":{"provider":"Fireworks","pass_at_1":0.64,"pass_hat_5":0.5,"mean_correctness":0.668,"cost_of_success":0.0556,"n":50,"tasks":[{"task":"calendar-deconflict","passes":3,"n":5,"mc":0.68},{"task":"contract-renewal-sweep","passes":1,"n":5,"mc":0.4},{"task":"crm-pipeline-update","passes":5,"n":5,"mc":1.0},{"task":"expense-audit","passes":5,"n":5,"mc":1.0},{"task":"filesystem-reorg","passes":5,"n":5,"mc":1.0},{"task":"gmail-inbox-triage","passes":0,"n":5,"mc":0.0},{"task":"outlook-schedule-meeting","passes":3,"n":5,"mc":0.6},{"task":"quarterly-report-merge","passes":5,"n":5,"mc":1.0},{"task":"standup-digest","passes":5,"n":5,"mc":1.0},{"task":"support-ticket-routing","passes":0,"n":5,"mc":0.0}]},"Gemma 4 31B":{"provider":"Featherless","basis":"flat_rate","pass_at_1":0.82,"pass_hat_5":0.7,"mean_correctness":0.898,"cost_of_success":null,"n":50,"tasks":[{"task":"calendar-deconflict","passes":3,"n":5,"mc":0.68},{"task":"contract-renewal-sweep","passes":3,"n":5,"mc":0.6},{"task":"crm-pipeline-update","passes":5,"n":5,"mc":1.0},{"task":"expense-audit","passes":0,"n":5,"mc":0.7},{"task":"filesystem-reorg","passes":5,"n":5,"mc":1.0},{"task":"gmail-inbox-triage","passes":5,"n":5,"mc":1.0},{"task":"outlook-schedule-meeting","passes":5,"n":5,"mc":1.0},{"task":"quarterly-report-merge","passes":5,"n":5,"mc":1.0},{"task":"standup-digest","passes":5,"n":5,"mc":1.0},{"task":"support-ticket-routing","passes":5,"n":5,"mc":1.0}]}}};
 
 (function(){
   const $=s=>document.querySelector(s);
   const AName={openclaw:"OpenClaw",zeptoclaw:"ZeptoClaw"};
-  const state={trials:"1",agent:"all",metric:"pass_at_1",sortK:"pass_at_1",sortDir:-1};
+  const state={trials:"1",metric:"pass_at_1",sortK:"pass_at_1",sortDir:-1};
 
   // Build a uniform cell list for the current trials view.
   function cellsFor(trials){
     if(trials==="1") return DATA.cells;
     return Object.entries(DATA.fiveTrial).map(([label,d])=>({
-      agent:"zeptoclaw",model_label:label,provider:d.provider,basis:"per_token",
+      agent:"zeptoclaw",model_label:label,provider:d.provider,basis:d.basis||"per_token",
       pass_at_1:d.pass_at_1,pass_hat_5:d.pass_hat_5,mean_correctness:d.mean_correctness,
       cost_of_success:d.cost_of_success,n:d.n,tasks5:d.tasks }));
   }
@@ -410,24 +407,25 @@ const DATA = {"cells":[{"agent":"openclaw","model_label":"Opus 4.8","provider":"
     let rows=models.map(m=>({m,
       o:src.find(c=>c.model_label===m&&c.agent==="openclaw"),
       z:src.find(c=>c.model_label===m&&c.agent==="zeptoclaw")}))
-      .filter(r=> state.agent==="openclaw"?r.o: state.agent==="zeptoclaw"?r.z : (r.o||r.z));
+      .filter(r=>r.o||r.z);
     let max=isCost?Math.max(0.01,...rows.flatMap(r=>[val(r.o),val(r.z)]).filter(v=>v!=null)):1;
     if(isCost)max*=1.1;
     rows.sort((a,b)=>Math.max(val(b.o)??-1,val(b.z)??-1)-Math.max(val(a.o)??-1,val(a.z)??-1));
     $("#chartAxis").textContent = isCost ? ("$0 — $"+max.toFixed(2)+"  ·  per-token only") : "0 — 100%";
-    const showBoth=state.agent==="all"&&state.trials==="1";
+    const showBoth=state.trials==="1";
     rows.forEach(r=>{
       const prov=(r.o||r.z).provider;
       const bar=(c,who,cls)=>{
+        // in the solo (5-trial) view, skip the per-bar agent label — it's all ZeptoClaw
+        const wh=showBoth?`<span class="who">${who}</span>`:"";
         const v=val(c);
         if(v==null){ const txt=c?(isCost?"~ flat-rate (not metered)":"—"):"—";
-          return `<div class="brow"><span class="who">${who}</span><div class="track"><div class="fill empty">${txt}</div></div></div>`; }
+          return `<div class="brow">${wh}<div class="track"><div class="fill empty">${txt}</div></div></div>`; }
         const w=Math.max(3,(v/max)*100), lab=isCost?("$"+v.toFixed(3)):v.toFixed(2);
-        return `<div class="brow"><span class="who">${who}</span><div class="track"><div class="fill ${cls}" style="width:${w}%">${lab}</div></div></div>`;
+        return `<div class="brow">${wh}<div class="track"><div class="fill ${cls}" style="width:${w}%">${lab}</div></div></div>`;
       };
       let bars="";
       if(showBoth) bars=bar(r.o,"OpenClaw","open")+bar(r.z,"ZeptoClaw","zepto");
-      else if(state.agent==="openclaw") bars=bar(r.o,"OpenClaw","open");
       else bars=bar(r.z,"ZeptoClaw","zepto");
       host.insertAdjacentHTML("beforeend",
         `<div class="mrow"><div class="mname"><span>${r.m}</span><span class="prov">${prov}</span></div><div class="bpair">${bars}</div></div>`);
@@ -439,7 +437,7 @@ const DATA = {"cells":[{"agent":"openclaw","model_label":"Opus 4.8","provider":"
 
   function drawTable(){
     const tb=$("#rows"); tb.innerHTML="";
-    let rows=cellsFor(state.trials).filter(c=>state.agent==="all"||c.agent===state.agent);
+    let rows=cellsFor(state.trials);
     const k=state.sortK,dir=state.sortDir;
     rows=rows.slice().sort((a,b)=>{
       if(k==="agent"||k==="model_label")return dir*String(a[k]).localeCompare(String(b[k]));
@@ -475,23 +473,21 @@ const DATA = {"cells":[{"agent":"openclaw","model_label":"Opus 4.8","provider":"
     });
   }
 
-  function applyTrialsConstraints(){
+  function applyView(){
     const five=state.trials==="5";
-    // pass^5 metric only at 5 trials
-    const p5btn=document.querySelector('#fMetric button[data-v="pass_hat_5"]');
-    p5btn.disabled=!five;
-    // OpenClaw has no 5-trial data yet
-    const ocBtn=document.querySelector('#fAgent button[data-v="openclaw"]');
-    ocBtn.disabled=five;
-    if(five && state.agent==="openclaw") setSeg("fAgent","agent","all");
+    // pass^5 is only computable at 5 trials — hide it entirely elsewhere (a greyed
+    // button reads as broken; an absent one doesn't).
+    document.querySelector('#fMetric button[data-v="pass_hat_5"]').hidden=!five;
     if(!five && state.metric==="pass_hat_5") setSeg("fMetric","metric","pass_at_1");
-    // note
+    // single-agent view: no legend, no Agent column — everything is ZeptoClaw
+    $("#legend").style.display=five?"none":"flex";
+    $("#board").classList.toggle("solo",five);
     const note=$("#viewNote");
     if(five){
-      note.innerHTML='<p style="margin:0"><b>5-trial reliability view — ZeptoClaw.</b> <span style="color:var(--muted)">Each cell is 10 tasks × 5 trials (50 attempts). <span class="mono">pass^5</span> = share of tasks that pass all five times. OpenClaw’s 5-trial run and Gemma’s are still to land, so this view is ZeptoClaw across the five per-token models.</span></p>';
+      note.innerHTML='<p style="margin:0"><b>Reliability view — ZeptoClaw, 10 tasks × 5 trials per model (50 attempts each).</b> <span style="color:var(--muted)"><span class="mono">pass^5</span> = share of tasks that pass all five times — the "can I rely on it?" number. OpenClaw’s 5-trial campaign hasn’t run yet, so this view is ZeptoClaw across six models.</span></p>';
       note.style.borderLeftColor="var(--zepto)";
     } else {
-      note.innerHTML='<p style="margin:0"><b>1-trial cross-agent comparison.</b> <span style="color:var(--muted)">Single-run numbers (coarse; ±0.1 swings are normal). Gemini 3.1 Pro shows for OpenClaw only — the ZeptoClaw run is pending a provider daily-quota reset. Switch to <b style="color:var(--text)">5 trials</b> for the reliability view.</span></p>';
+      note.innerHTML='<p style="margin:0"><b>Head-to-head — OpenClaw vs ZeptoClaw, one trial per task.</b> <span style="color:var(--muted)">Single-run numbers are coarse (±0.1 swings are normal — see the reliability view). Gemini 3.1 Pro shows for OpenClaw only; the ZeptoClaw run is pending a provider daily-quota reset.</span></p>';
       note.style.borderLeftColor="var(--warn)";
     }
   }
@@ -504,15 +500,14 @@ const DATA = {"cells":[{"agent":"openclaw","model_label":"Opus 4.8","provider":"
       if(b.disabled)return; setSeg(id,key,b.dataset.v); after&&after(); drawChart(); drawTable();
     }));
   }
-  wireSeg("fTrials","trials",applyTrialsConstraints);
-  wireSeg("fAgent","agent");
+  wireSeg("fView","trials",applyView);
   wireSeg("fMetric","metric");
   document.querySelectorAll("#board thead th").forEach(th=>th.addEventListener("click",()=>{
     const k=th.dataset.k;
     if(state.sortK===k)state.sortDir*=-1; else{state.sortK=k;state.sortDir=(k==="agent"||k==="model_label")?1:-1;}
     drawTable();
   }));
-  applyTrialsConstraints(); drawChart(); drawTable();
+  applyView(); drawChart(); drawTable();
 })();
 </script>
 </body>
