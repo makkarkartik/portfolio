@@ -657,11 +657,11 @@
           <div class="metric-lbl">ZeptoClaw mean pass@1, shared models — OpenClaw: 0.78</div>
         </div>
         <div class="metric">
-          <div class="metric-val">6 · 5</div>
+          <div class="metric-val">7 · 5</div>
           <div class="metric-lbl">LLMs · providers, one cost-metered gateway</div>
         </div>
         <div class="metric">
-          <div class="metric-val">720</div>
+          <div class="metric-val">840</div>
           <div class="metric-lbl">Sandboxed, cost-metered, split-phase-graded attempts</div>
         </div>
       </div>
@@ -676,7 +676,7 @@
         <li><strong>Fair by construction.</strong> Every attempt starts from <strong>byte-identical state</strong> — a fresh workspace volume, the same fixture, the same git baseline — on <strong>digest-pinned</strong> agent images under fixed CPU/memory and wall-clock/step budgets, with <strong>gateway-only egress</strong> (no open internet to fetch hidden answers).</li>
         <li><strong>Cost truth, not self-report.</strong> All LLM traffic routes through a LiteLLM gateway that mints a <strong>per-attempt, budget-capped virtual key</strong> — the agent can't outspend it, real provider keys never enter the sandbox, and spend is metered at the highest <em>gateway</em> provenance (per-token vs flat-rate bases never blended).</li>
         <li><strong>Split-phase verification.</strong> Untrusted code does the work; a <strong>separate MAKBench-owned verifier</strong> grades the frozen workspace read-only. Every task is anti-triviality-checked so a pristine fixture <em>fails</em> — a no-op agent scores zero.</li>
-        <li><strong>Honest, reproducible read.</strong> Both agents ran every task <strong>5×</strong> — 720 graded, cost-metered attempts. Headline: the same Nemotron 3 Ultra scores <strong>pass^5 0.50 on ZeptoClaw vs 0.00 on OpenClaw</strong> — the agent scaffold is worth as much as the model, and the harness isolates exactly that. Every number is <strong>reproducible and cost-honest</strong>.</li>
+        <li><strong>Honest, reproducible read.</strong> Both agents ran every task <strong>5×</strong> — 840 graded, cost-metered attempts across 7 models. Headline: the scaffold effect cuts both ways — Nemotron scores <strong>pass^5 0.50 on ZeptoClaw vs 0.00 on OpenClaw</strong>, while open-weights <strong>gpt-oss-120B is OpenClaw's only perfect cell (1.00/1.00, ~$0.04/attempt)</strong> and breaks one task on ZeptoClaw. Every number is <strong>reproducible and cost-honest</strong>.</li>
       </ul>
 
       <div class="card-links">
