@@ -112,8 +112,8 @@
   @media(max-width:760px){.taskgrid{grid-template-columns:1fr}}
   /* pass@1 vs pass^5 cube lattices: x=depth(trials, drawn up-right), y=tasks */
   .cubegrid{display:flex;flex-wrap:wrap;gap:20px 12px;justify-content:space-between;margin-top:6px}
-  .clat{position:relative;width:118px;height:214px}
-  .clat .tile{position:absolute;width:17px;height:9px;border-radius:2px;border:1px solid var(--bg);box-sizing:border-box;transition:background .25s,opacity .25s}
+  .clat{position:relative;width:118px;height:236px}
+  .clat .tile{position:absolute;width:16px;height:9px;border-radius:2px;border:1px solid var(--bg);box-sizing:border-box;transition:background .25s,opacity .25s}
   .clat .tile.on{background:var(--good)}
   .clat .tile.off{background:var(--bad)}
   .clat .tile.ghost{background:transparent;border:1px solid var(--border);opacity:.55}
@@ -579,7 +579,9 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
   // so tiles 0..k-1 render as passes — faithful to the math, deterministic to draw.
   function drawCube(mode){
     const host=$("#cube"); host.innerHTML="";
-    const dx=5,dy=13,dz=4,top=22;
+    // Row gap (17px) deliberately exceeds tile height + total depth rise (9 + 6px),
+    // so a row's receding trials can never weave into the row above.
+    const dx=9,dy=17,dz=1.5,top=12,left=26;
     Object.entries(DATA.fiveTrial).forEach(([label,d])=>{
       let tiles="";
       d.tasks.forEach((tk,r)=>{
@@ -587,7 +589,7 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
         for(let t=tk.n-1;t>=0;t--){                      // back-to-front so trial 0 sits on top
           const pass=t<tk.passes;
           const cls = pass ? (solid?"on":"ghost") : "off";
-          tiles+=`<div class="tile ${cls}" style="left:${34+t*dx}px;top:${top+r*dy-t*dz+dz*4}px" title="${tk.task} · ${tk.passes}/${tk.n} trials passed"></div>`;
+          tiles+=`<div class="tile ${cls}" style="left:${left+t*dx}px;top:${(top+r*dy-t*dz+dz*4).toFixed(1)}px" title="${tk.task} · ${tk.passes}/${tk.n} trials passed"></div>`;
         }
       });
       const v = mode==="p1" ? d.pass_at_1 : d.pass_hat_5;
