@@ -103,7 +103,7 @@
   .tabs button:hover{color:var(--text);border-color:var(--accent)}
   .tabs button[aria-pressed="true"]{background:var(--accent-bg);color:var(--accent);border-color:var(--accent);font-weight:600}
   .taskgrid{display:grid;grid-template-columns:1.35fr .95fr;gap:18px;align-items:start;margin-bottom:18px}
-  .taskgrid .code pre{max-height:440px;overflow:auto}
+  .taskgrid .code pre{max-height:520px;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
   .hth{font-size:10.5px;white-space:nowrap}
   .hcell{text-align:center;font-family:ui-monospace,monospace;font-size:12px;white-space:nowrap}
   .hgood{color:var(--good);background:color-mix(in srgb,var(--good) 10%,transparent)}
@@ -309,39 +309,6 @@
   <div class="tabs" id="taskTabs"></div>
   <div id="taskView"></div>
 
-  <div class="panels" id="crmExtra">
-    <div class="panel">
-      <div class="ph">Its workspace at t = 0</div>
-      <div class="tree">
-/workspace/<br>
-├─ <span class="hi">TOOLS.md</span><span class="dim"> — how to drive the CRM</span><br>
-├─ <span class="hi">crm.db</span><span class="dim"> — SQLite · 12 leads, 3 owners</span><br>
-├─ tools/<span class="dim"> </span><br>
-│&nbsp;&nbsp;└─ <span class="hi">crmctl.py</span><span class="dim"> — mock CRM CLI</span><br>
-└─ .mak/<span class="dim"> — prompt + git baseline</span>
-      </div>
-      <p class="plab" style="margin:16px 0 6px">TOOLS.md — commands</p>
-      <div class="tree" style="font-size:12px">
-crmctl.py <span class="hi">list</span> [--stage &lt;s&gt;]<br>
-crmctl.py <span class="hi">get</span> &lt;id&gt;<br>
-crmctl.py <span class="hi">update</span> &lt;id&gt; --stage &lt;s&gt; [--close-date]
-      </div>
-      <p class="note" style="margin-top:12px;font-size:12.5px">Stages: <span class="mono">prospect · qualified · negotiation · won · lost</span>. A lead is <b style="color:var(--text)">open</b> unless won or lost. A real tool surface over stdlib <span class="mono">sqlite3</span>.</p>
-    </div>
-    <div class="panel">
-      <div class="ph">What a correct solution produces</div>
-      <p class="note" style="font-size:13px;margin-bottom:10px">Mutate the world <em>and</em> report on it: run the three <span class="mono">update</span> commands, then write the recomputed totals.</p>
-      <div class="code">
-        <div class="cbar"><span class="ct">out/pipeline.json — expected</span></div>
-<pre>{
-  <span class="s">"alice@acme.io"</span>: <span class="v">12000.0</span>,
-  <span class="s">"bob@acme.io"</span>:   <span class="v">34000.0</span>,
-  <span class="s">"carol@acme.io"</span>: <span class="v">24000.0</span>
-}</pre>
-      </div>
-      <p class="note" style="margin-top:12px;font-size:12.5px">Distractor leads — two already <span class="mono">won</span>, one <span class="mono">lost</span> — must be excluded. Wrong aggregation, or a skipped step, fails the task.</p>
-    </div>
-  </div>
 </section>
 
 <!-- SCORING -->
@@ -493,6 +460,20 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
   }
 
   // ---- Task browser: all 10 tasks, verbatim prompt + hidden checks ----
+  // Per-task fixture listing (from packs/enterprise-mini/tasks/*/fixtures/repo) and the
+  // one-line outcome a correct solution produces — same three panels for every tab.
+  const TASKMETA={
+    "calendar-deconflict":{ws:[["calendar/events.json","the double-booked day"],["tools/calctl.py","mock calendar CLI"]],expect:"calendar/events.json edited so the lower-priority meeting sits in the earliest free same-length slot later that day — zero overlaps remain."},
+    "contract-renewal-sweep":{ws:[["vendors/vendors.json","vendor registry"],["mail/inbox.json","outbound mail store"],["tools/vendorctl.py","vendor CLI"],["tools/mailctl.py","mail CLI"]],expect:"one reminder email per in-scope vendor, plus out/renewals.csv listing exactly the vendors ending within 45 days."},
+    "crm-pipeline-update":{ws:[["crm.db","SQLite · 12 leads, 3 owners"],["tools/crmctl.py","mock CRM CLI"]],expect:"L-003/007/010 marked won via the CLI, plus out/pipeline.json mapping each owner to their recomputed open total — distractor leads excluded."},
+    "expense-audit":{ws:[["expenses/transactions.csv","the ledger"],["policy/expense_policy.json","caps & rules"],["tools/policyctl.py","policy CLI"]],expect:"out/violations.csv with one precedence-correct reason per violating transaction, plus out/report.md stating the reimbursable total."},
+    "filesystem-reorg":{ws:[["inbox/","16 unsorted files (.pdf .png .csv .py …)"],["manifest.csv","filename → year"]],expect:"every file moved to sorted/&lt;year&gt;/&lt;category&gt;/ by extension, contents untouched, inbox/ left empty."},
+    "gmail-inbox-triage":{ws:[["mail/inbox.json","the shared inbox"],["tools/mailctl.py","mail CLI"]],expect:"out/summary.md covering the whole inbox, plus out/urgent.json with exactly the same-day-urgent message ids."},
+    "outlook-schedule-meeting":{ws:[["calendar/events.json","four people's calendars"],["tools/calctl.py","mock calendar CLI"]],expect:"one \"Project Sync\" event booked at the earliest hour all four attendees are free — nobody double-booked."},
+    "quarterly-report-merge":{ws:[["data/sales.csv","region,amount"],["data/kpis.json","nps · churn · users"],["notes.md","qualitative bullets"],["template.md","the skeleton to fill"]],expect:"out/Q3_report.md with the exact revenue total, top region, three KPIs and carried-over notes under the template's headers."},
+    "standup-digest":{ws:[["chat/standup.json","the channel history"],["tools/chatctl.py","chat CLI"]],expect:"out/digest.md with an update for all five people plus Blockers and Open-questions sections that capture every one raised."},
+    "support-ticket-routing":{ws:[["tickets/queue.json","the ticket queue"],["tools/ticketctl.py","ticket CLI"]],expect:"every ticket assigned via the CLI and mirrored in out/assignments.json, with team by product and severity by first-match keyword rules."}
+  };
   const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   function taskStats(id){
     let a=0,ap=0,t=0,tp=0;
@@ -501,7 +482,7 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
     return {a,ap,t,tp};
   }
   function renderTask(id){
-    const t=TASKS.find(x=>x.id===id), s=taskStats(id);
+    const t=TASKS.find(x=>x.id===id), s=taskStats(id), m=TASKMETA[id];
     document.querySelectorAll("#taskTabs button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===id?"true":"false"));
     $("#taskView").innerHTML=`<div class="taskgrid">
       <div class="code"><div class="cbar"><i style="background:#e0655b"></i><i style="background:#e0b24f"></i><i style="background:#63c088"></i><span class="ct">/workspace/.mak/prompt.txt — ${t.id}</span></div><pre>${esc(t.prompt)}</pre></div>
@@ -509,10 +490,12 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
         <p class="note" style="margin:8px 0 12px;font-size:12px">difficulty ${t.difficulty}/3 · ${t.tags.map(x=>`<span class="mono">${x}</span>`).join(" · ")}</p>
         <p class="plab">Hidden checks · weights</p>
         <div class="mdefs" style="margin-top:8px">${t.checks.map(c=>`<div class="mdef"><div class="mn">${c.name} · ${c.weight}</div><div class="md">${c.type==="pytest"?"hidden pytest against the frozen workspace":"file must exist in the workspace"}</div></div>`).join("")}</div>
+        <p class="plab" style="margin-top:16px">Workspace at t = 0</p>
+        <div class="tree" style="font-size:12px;margin-top:8px">/workspace/<br>${m.ws.map(([f,note])=>`├─ <span class="hi">${f}</span><span class="dim"> — ${note}</span>`).join("<br>")}<br>├─ TOOLS.md<span class="dim"> — how to drive the tools</span><br>└─ .mak/<span class="dim"> — prompt + git baseline</span></div>
+        <p class="plab" style="margin-top:16px">A correct solution</p>
+        <p class="note" style="font-size:12.5px;margin-top:6px">${m.expect}</p>
         <p class="note" style="margin-top:14px;font-size:12.5px">On this task: <b style="color:var(--text)">${s.ap}/${s.a}</b> agent×model pairs pass head-to-head · <b style="color:var(--text)">${s.tp}/${s.t}</b> reliability trials pass.</p>
       </div></div>`;
-    const ex=document.getElementById("crmExtra");
-    if(ex) ex.style.display = id==="crm-pipeline-update" ? "" : "none";
   }
   $("#taskTabs").innerHTML=TASKS.map(t=>`<button data-v="${t.id}" aria-pressed="false">${t.id}</button>`).join("");
   document.querySelectorAll("#taskTabs button").forEach(b=>b.addEventListener("click",()=>renderTask(b.dataset.v)));
