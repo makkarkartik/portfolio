@@ -636,6 +636,54 @@
         <a href="https://github.com/makkarkartik" class="card-link">GitHub ↗</a>
       </div>
     </div>
+
+    <div class="research-card fade-up" style="margin-top:20px">
+      <p class="research-title">MAKBench — An Open-Source, Cost-Metered Harness<br>for Benchmarking CLI Agents Across LLMs</p>
+      <p class="research-meta">Independent Project &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; Docker-sandboxed · LiteLLM-gateway metered · split-phase grading &nbsp;·&nbsp; ZeptoClaw vs OpenClaw across 9 LLMs / 5 providers</p>
+
+      <p class="research-body">
+        Built a benchmark harness that runs <strong>CLAW-style CLI agents</strong> across many LLMs on the same real
+        tool-use tasks — each attempt in an <strong>isolated Docker sandbox</strong>, every model call routed through
+        <strong>one metered gateway</strong>, and the finished workspace graded in a <strong>separate trusted
+        container</strong> the agent can't touch. Identical starting state and observed cost make agent/model pairings
+        genuinely comparable. The head-to-head: ZeptoClaw runs <strong>on par with OpenClaw</strong> on most models and
+        <strong>ahead on Nemotron</strong> — at a fraction of the reasoning-model cost.
+      </p>
+
+      <a class="metrics-link" href="makbench.html" aria-label="Open the MAKBench results dashboard">
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-val">0.88</div>
+          <div class="metric-lbl">ZeptoClaw mean pass@1, shared models — OpenClaw: 0.78</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val">9 · 5</div>
+          <div class="metric-lbl">LLMs · providers, one cost-metered gateway</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val">140</div>
+          <div class="metric-lbl">Sandboxed, cost-metered, split-phase-graded attempts</div>
+        </div>
+      </div>
+      </a>
+
+      <a class="results-cta" href="makbench.html">
+        <span class="rc-text"><strong>Explore the harness &amp; results</strong> — how agents are sandboxed &amp; spun up, what a task looks like to the agent, how output is verified, and an interactive ZeptoClaw vs OpenClaw explorer.</span>
+        <span class="rc-go">Open dashboard <span class="arrow">→</span></span>
+      </a>
+
+      <ul class="research-bullets">
+        <li><strong>Fair by construction.</strong> Every attempt starts from <strong>byte-identical state</strong> — a fresh workspace volume, the same fixture, the same git baseline — on <strong>digest-pinned</strong> agent images under fixed CPU/memory and wall-clock/step budgets, with <strong>gateway-only egress</strong> (no open internet to fetch hidden answers).</li>
+        <li><strong>Cost truth, not self-report.</strong> All LLM traffic routes through a LiteLLM gateway that mints a <strong>per-attempt, budget-capped virtual key</strong> — the agent can't outspend it, real provider keys never enter the sandbox, and spend is metered at the highest <em>gateway</em> provenance (per-token vs flat-rate bases never blended).</li>
+        <li><strong>Split-phase verification.</strong> Untrusted code does the work; a <strong>separate MAKBench-owned verifier</strong> grades the frozen workspace read-only. Every task is anti-triviality-checked so a pristine fixture <em>fails</em> — a no-op agent scores zero.</li>
+        <li><strong>Honest, reproducible read.</strong> On the current pass the agents are level on most models; ZeptoClaw leads Nemotron <strong>0.80 vs 0.40</strong> (partly a reasoning-config path, flagged as such). Both <strong>1-trial and 5-trial</strong> runs are published — at 5 trials Nemotron's lucky 0.80 corrects to 0.64 — the point is that numbers are <strong>reproducible and cost-honest</strong>.</li>
+      </ul>
+
+      <div class="card-links">
+        <a href="makbench.html" class="card-link primary">View results dashboard ↗</a>
+        <a href="https://github.com/makkarkartik/makbench" class="card-link">GitHub ↗</a>
+      </div>
+    </div>
   </section>
 
   <!-- EXPERIENCE -->

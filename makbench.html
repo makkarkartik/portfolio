@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MAKBench — Agent Evaluation Harness · Kartik Makkar</title>
+<meta name="description" content="An open-source, cost-metered harness that benchmarks CLAW-style CLI agents across LLMs in sealed Docker sandboxes — with an interactive ZeptoClaw vs OpenClaw results explorer across 1-trial and 5-trial runs.">
+<link rel="canonical" href="https://kartikmakkar.com/makbench.html">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+  :root{ --max:980px; --radius:10px; --transition:200ms ease; }
+  [data-theme="dark"]{
+    --bg:#0c0f1a; --surface:#131929; --surface2:#0f1525; --code:#0a0e18;
+    --border:rgba(255,255,255,0.07); --border-hv:rgba(255,255,255,0.14);
+    --text:#e8edf5; --muted:#8b94a7; --faint:#5a6477;
+    --accent:#4f8eff; --accent-bg:rgba(79,142,255,0.1); --accent-glow:rgba(79,142,255,0.25);
+    --good:#46c98b; --good-bg:rgba(70,201,139,0.12); --bad:#f0596b; --warn:#e0b341;
+    --zepto:#4f8eff; --open:#e0a24a; --partial:#e0b341;
+    --nav-bg:rgba(12,15,26,0.85);
+  }
+  [data-theme="light"]{
+    --bg:#fafbff; --surface:#ffffff; --surface2:#f1f4fb; --code:#0f1525;
+    --border:#e4e8f2; --border-hv:#c8d0e8;
+    --text:#0d1527; --muted:#4a5568; --faint:#8896ae;
+    --accent:#1F3A93; --accent-bg:#eef2ff; --accent-glow:rgba(31,58,147,0.15);
+    --good:#0c8f54; --good-bg:rgba(12,143,84,0.12); --bad:#d83a4e; --warn:#b07d12;
+    --zepto:#1F3A93; --open:#b0702a; --partial:#b07d12;
+    --nav-bg:rgba(250,251,255,0.88);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
+  .mono{font-family:ui-monospace,"SFMono-Regular","JetBrains Mono",Consolas,monospace}
+  nav{position:sticky;top:0;z-index:10;background:var(--nav-bg);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
+  nav a.back{color:var(--text);font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:7px}
+  nav a.back:hover{color:var(--accent)}
+  nav .navlinks a{color:var(--muted);font-size:13px;margin-left:18px}
+  nav .navlinks a:hover{color:var(--text)}
+  @media(max-width:640px){nav .navlinks a{margin-left:12px;font-size:12px}}
+  header.hero{padding:54px 0 8px}
+  .eyebrow{color:var(--accent);font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin:0 0 12px}
+  h1{font-size:33px;line-height:1.18;margin:0 0 14px;letter-spacing:-0.02em}
+  h1 em{color:var(--accent);font-style:normal}
+  .lede{color:var(--muted);font-size:16px;max-width:760px;margin:0 0 22px}
+  .lede strong{color:var(--text);font-weight:600}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 30px}
+  .pill{font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:5px 12px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:8px 0 6px}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 16px}
+  .stat .v{font-size:27px;font-weight:700;letter-spacing:-0.01em}
+  .stat .l{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
+  section{padding:34px 0;border-top:1px solid var(--border);margin-top:28px}
+  section:first-of-type{border-top:none;margin-top:0}
+  .kicker{color:var(--accent);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin:0 0 6px}
+  h2{font-size:22px;margin:0 0 6px;letter-spacing:-0.01em}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 20px;max-width:780px}
+  .note{color:var(--muted);font-size:13.5px;max-width:820px}
+  .note strong,.sub strong{color:var(--text);font-weight:600}
+  .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:6px 0 8px}
+  .stepc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 14px}
+  .stepc .si{font-size:11px;font-weight:700;color:var(--accent);font-family:ui-monospace,monospace}
+  .stepc .st{font-size:13px;font-weight:600;margin:7px 0 4px}
+  .stepc .sd{font-size:12px;color:var(--muted);line-height:1.5}
+  @media(max-width:760px){.steps{grid-template-columns:1fr 1fr}}
+  .code{background:var(--code);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:4px 0 0}
+  .code .cbar{display:flex;align-items:center;gap:6px;padding:9px 13px;border-bottom:1px solid rgba(255,255,255,0.06)}
+  .code .cbar i{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .code .cbar .ct{margin-left:6px;font-size:11.5px;color:#8b93a0;font-family:ui-monospace,monospace}
+  .code pre{margin:0;padding:15px 16px;overflow-x:auto;font-size:12.5px;line-height:1.7;color:#cfd6e2;font-family:ui-monospace,"SFMono-Regular","JetBrains Mono",Consolas,monospace}
+  .code pre .c{color:#6b7486}.code pre .k{color:#e0a24a}.code pre .s{color:#7fc99a}.code pre .v{color:#7fa6f5}
+  .panels{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px}
+  .panel.agent{border-top:3px solid var(--open)}
+  .panel.verify{border-top:3px solid var(--good)}
+  .panel .ph{font-size:14px;font-weight:600;margin:0 0 8px}
+  .panel .plab{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-family:ui-monospace,monospace}
+  .panel ul{margin:6px 0 0;padding-left:18px;color:var(--muted);font-size:13px;line-height:1.7}
+  .tree{font-family:ui-monospace,"SFMono-Regular",Consolas,monospace;font-size:12.5px;line-height:1.85;color:var(--muted)}
+  .tree .hi{color:var(--accent)} .tree .dim{color:var(--faint)}
+  .callout{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--warn);border-radius:8px;padding:16px 20px;margin-top:12px}
+  .callout b{color:var(--warn)}
+  .callout.acc{border-left-color:var(--accent)} .callout.acc b{color:var(--accent)}
+  .mdefs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
+  .mdef{border-left:2px solid var(--accent);padding:2px 0 2px 14px}
+  .mdef .mn{font-weight:700;font-size:13.5px;font-family:ui-monospace,monospace}
+  .mdef .md{color:var(--muted);font-size:13px;margin-top:2px}
+  @media(max-width:600px){.mdefs{grid-template-columns:1fr}}
+  .controls{display:flex;flex-wrap:wrap;gap:18px 22px;align-items:flex-end;margin:2px 0 20px}
+  .cg{display:flex;flex-direction:column;gap:7px}
+  .cg .cl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-family:ui-monospace,monospace}
+  .seg{display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:3px}
+  .seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:12.5px;padding:6px 12px;border-radius:6px;cursor:pointer;white-space:nowrap;transition:all var(--transition)}
+  .seg button[aria-pressed="true"]{background:var(--accent-bg);color:var(--accent);font-weight:600;box-shadow:inset 0 0 0 1px var(--accent-glow)}
+  .seg button:disabled{opacity:.35;cursor:not-allowed}
+  .legend{display:flex;gap:16px;align-items:center;margin-left:auto;font-size:12.5px;color:var(--muted)}
+  .legend .k{display:inline-flex;align-items:center;gap:6px}
+  .legend .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .chartcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px}
+  .mrow{margin:0 0 14px}
+  .mrow .mname{font-size:13px;font-weight:600;color:var(--text);margin-bottom:5px;display:flex;justify-content:space-between}
+  .mrow .mname .prov{color:var(--faint);font-weight:400;font-size:11.5px;font-family:ui-monospace,monospace}
+  .bpair{display:flex;flex-direction:column;gap:5px}
+  .brow{display:flex;align-items:center;gap:10px}
+  .brow .who{width:74px;flex:none;font-size:11px;color:var(--muted);text-align:right;font-family:ui-monospace,monospace}
+  .track{flex:1;height:18px;background:var(--surface2);border-radius:5px;overflow:hidden;position:relative}
+  .fill{height:100%;border-radius:5px;display:flex;align-items:center;justify-content:flex-end;padding-right:7px;font-size:11px;font-weight:700;color:#fff;min-width:30px;transition:width 500ms ease}
+  .fill.open{background:var(--open)} .fill.zepto{background:var(--zepto)}
+  .fill.empty{background:transparent;color:var(--faint);justify-content:flex-start;padding-left:2px;font-weight:400}
+  .axis{font-size:10.5px;color:var(--faint);margin-top:4px;text-align:right;font-family:ui-monospace,monospace}
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+  table{border-collapse:collapse;width:100%;font-size:13px;min-width:600px}
+  th,td{padding:11px 14px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap}
+  th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;user-select:none}
+  th:hover{color:var(--text)}
+  td.name,th:first-child{text-align:left}
+  td.name{color:var(--text);font-weight:600}
+  tbody tr.row{cursor:pointer;transition:background var(--transition)}
+  tbody tr.row:hover{background:var(--accent-bg)}
+  .adot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:middle}
+  .good{color:var(--good)} .bad{color:var(--bad)} .muted{color:var(--muted)} .hi{color:var(--text);font-weight:700}
+  .num{font-variant-numeric:tabular-nums}
+  .expr td{padding:0;border-bottom:1px solid var(--border);background:var(--surface2)}
+  .expin{padding:12px 16px 16px}
+  .expin .eh{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin:2px 0 12px;font-family:ui-monospace,monospace}
+  .tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:7px}
+  .tchip{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;background:var(--surface);border:1px solid var(--border)}
+  .tchip .ts{width:7px;height:7px;border-radius:50%;flex:none}
+  .tchip .tn{font-size:12px;font-weight:500;color:var(--text);line-height:1.2}
+  .tchip .tsc{margin-left:auto;font-size:11.5px;color:var(--muted);font-family:ui-monospace,monospace}
+  footer{border-top:1px solid var(--border);padding:30px 0 50px;color:var(--faint);font-size:13px;margin-top:30px}
+  footer a{color:var(--muted)} footer a:hover{color:var(--accent)}
+  @media(max-width:760px){.stats{grid-template-columns:1fr 1fr}.panels{grid-template-columns:1fr}h1{font-size:27px}.legend{margin-left:0;width:100%}}
+</style>
+<script>var _t=localStorage.getItem('theme'); if(_t)document.documentElement.dataset.theme=_t;</script>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="back" href="/">&larr;&nbsp; Kartik Makkar</a>
+  <div class="navlinks">
+    <a href="#results">Results</a><a href="#how">Harness</a><a href="#task">A task</a><a href="#scoring">Scoring</a>
+  </div>
+</div></nav>
+
+<div class="wrap">
+
+<header class="hero">
+  <p class="eyebrow">Applied ML Systems · Project Dashboard</p>
+  <h1>Benchmarking AI agents — <em>fairly, and to the dollar</em></h1>
+  <p class="lede">
+    <strong>MAKBench</strong> runs CLAW-style CLI agents across many LLMs on the same real tasks, in identical
+    Docker sandboxes, with every model call metered through one gateway. Same starting state, same limits,
+    <strong>observed</strong> cost — so a score means something. Below: how the harness works end-to-end, and an
+    interactive <strong>ZeptoClaw vs OpenClaw</strong> results explorer across <strong>1-trial and 5-trial</strong> runs.
+  </p>
+  <div class="pills">
+    <span class="pill">CLAW-style CLI agents</span>
+    <span class="pill">Docker-sandboxed</span>
+    <span class="pill">Gateway-metered cost truth</span>
+    <span class="pill">Split-phase grading</span>
+    <span class="pill">enterprise-mini · 10 tasks</span>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="v">2</div><div class="l">Agents compared head-to-head</div></div>
+    <div class="stat"><div class="v">9</div><div class="l">LLMs under test across 5 providers</div></div>
+    <div class="stat"><div class="v">10</div><div class="l">Enterprise tool-use tasks</div></div>
+    <div class="stat"><div class="v">390</div><div class="l">Graded, cost-metered attempts</div></div>
+  </div>
+</header>
+
+<!-- RESULTS -->
+<section id="results">
+  <p class="kicker">1 · Results explorer</p>
+  <h2>ZeptoClaw vs OpenClaw, model by model</h2>
+  <p class="sub">Switch between the <strong>1-trial</strong> cross-agent comparison and the <strong>5-trial</strong>
+    reliability view, filter by agent, change the metric, and click any row for the per-task breakdown.</p>
+
+  <div class="callout" id="viewNote"></div>
+
+  <div class="controls" style="margin-top:22px">
+    <div class="cg"><span class="cl">Trials</span>
+      <div class="seg" id="fTrials" role="group" aria-label="Trials">
+        <button data-v="1" aria-pressed="true">1 trial</button>
+        <button data-v="5" aria-pressed="false">5 trials</button>
+      </div>
+    </div>
+    <div class="cg"><span class="cl">Agent</span>
+      <div class="seg" id="fAgent" role="group" aria-label="Filter by agent">
+        <button data-v="all" aria-pressed="true">All</button>
+        <button data-v="openclaw" aria-pressed="false">OpenClaw</button>
+        <button data-v="zeptoclaw" aria-pressed="false">ZeptoClaw</button>
+      </div>
+    </div>
+    <div class="cg"><span class="cl">Metric</span>
+      <div class="seg" id="fMetric" role="group" aria-label="Choose metric">
+        <button data-v="pass_at_1" aria-pressed="true">pass@1</button>
+        <button data-v="pass_hat_5" aria-pressed="false" disabled>pass^5</button>
+        <button data-v="mean_correctness" aria-pressed="false">correctness</button>
+        <button data-v="cost_of_success" aria-pressed="false">cost / success</button>
+      </div>
+    </div>
+    <div class="legend" id="legend">
+      <span class="k"><span class="sw" style="background:var(--open)"></span>OpenClaw</span>
+      <span class="k"><span class="sw" style="background:var(--zepto)"></span>ZeptoClaw</span>
+    </div>
+  </div>
+
+  <div class="chartcard" style="margin-bottom:22px">
+    <div id="chart"></div>
+    <p class="axis" id="chartAxis">0 — 100%</p>
+  </div>
+
+  <div class="tablewrap">
+    <table id="board">
+      <thead><tr>
+        <th data-k="agent">Agent</th>
+        <th data-k="model_label">Model</th>
+        <th data-k="pass_at_1">pass@1</th>
+        <th data-k="pass_hat_5">pass^5</th>
+        <th data-k="mean_correctness">correctness</th>
+        <th data-k="cost_of_success">cost / success</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <p class="note" style="margin-top:14px;font-size:12.5px">Cost is metered per-token from the gateway; Gemma runs on a flat-rate plan and shows <span class="mono">~</span> (excluded from cost ranking). <span class="mono">pass^5</span> only applies to the 5-trial view.</p>
+</section>
+
+<!-- READ -->
+<section id="read">
+  <p class="kicker">The read</p>
+  <h2>Why trials matter — the numbers move</h2>
+  <p class="note">At <strong>1 trial</strong> the two agents look level on most models, with ZeptoClaw ahead on Nemotron.
+    Run each task <strong>5 times</strong> and the picture sharpens: Sonnet 5 firms up <strong>0.80 → 0.92 pass@1</strong>
+    (its lone single-run miss was variance), while <strong>Nemotron's lucky 0.80 corrects to 0.64</strong> — and its
+    <strong>pass^5 of 0.50</strong> reveals only half its tasks pass all five times. GPT-5.6 sol and Gemini 3.5 Flash are
+    <strong>perfectly reliable (pass^5 = 1.0)</strong>. That's the whole point of multiple trials: <strong>pass@1</strong>
+    asks "can it?", <strong>pass^5</strong> asks "can I rely on it?". These numbers are reproducible and cost-honest —
+    same sandbox, same fixture, every dollar metered. <em>(OpenClaw's 5-trial run and Gemma's are still to land.)</em></p>
+</section>
+
+<!-- HOW -->
+<section id="how">
+  <p class="kicker">2 · The harness</p>
+  <h2>One agent, one task, one sealed sandbox</h2>
+  <p class="sub">MAKBench benchmarks CLAW-style CLI agents — ZeptoClaw, OpenClaw, Aider, Claude Code and the long
+    tail of similar tools — across different LLMs. Each attempts a real task in an isolated Docker sandbox; every
+    LLM call routes through one metered gateway; the finished workspace is graded in a <strong>separate, trusted
+    container</strong>. Identical starting state and limits make agent/model pairings genuinely comparable — and
+    every dollar of cost is <strong>observed, not self-reported</strong>.</p>
+  <div class="steps">
+    <div class="stepc"><div class="si">01</div><div class="st">Prepared image</div><div class="sd">The agent's digest-pinned image, install steps baked in and snapshotted — attempts start in ~1s.</div></div>
+    <div class="stepc"><div class="si">02</div><div class="st">Fresh workspace</div><div class="sd">A new volume, staged with the task fixture, the prompt written to a file, and a git baseline commit.</div></div>
+    <div class="stepc"><div class="si">03</div><div class="st">Container launch</div><div class="sd">A detached container, workspace at /workspace, hard CPU &amp; memory caps.</div></div>
+    <div class="stepc"><div class="si">04</div><div class="st">Gateway-only net</div><div class="sd">Joined to an internal bridge whose only peer is the gateway — no route to the open internet.</div></div>
+    <div class="stepc"><div class="si">05</div><div class="st">Supervision</div><div class="sd">A 1&nbsp;Hz loop enforces wall-clock, stall and step budgets, then dumps the full log.</div></div>
+  </div>
+  <p class="sub" style="margin-top:26px"><strong>Adding an agent is a single YAML file</strong> — no code. The
+    universal <span class="mono">cli-generic</span> adapter fills in the model and prompt per attempt and points the
+    agent's SDK env vars at the gateway.</p>
+  <div class="code">
+    <div class="cbar"><i style="background:#e0655b"></i><i style="background:#e0b24f"></i><i style="background:#63c088"></i><span class="ct">agents.d/zeptoclaw.yaml</span></div>
+<pre><span class="k">id</span>: zeptoclaw
+<span class="k">adapter</span>: cli-generic
+<span class="k">image</span>: ghcr.io/qhkm/zeptoclaw<span class="c">@sha256:e32bce56…b86a</span>   <span class="c"># digest-pinned</span>
+<span class="k">command</span>:
+  - /bin/sh
+  - -c
+  - |
+    export OPENAI_BASE_URL=<span class="s">"$OPENAI_BASE_URL"</span>   <span class="c"># points at the metered gateway</span>
+    exec zeptoclaw agent --mode autonomous -m <span class="s">"$(cat {prompt_file})"</span>
+<span class="k">env_style</span>: openai</pre>
+  </div>
+  <div class="callout acc"><p style="margin:0"><b>The gateway is the one source of cost truth.</b> Before each attempt it mints a per-attempt, budget-capped <b style="color:var(--text)">virtual key</b> — an agent can't outspend it. Real provider keys never enter the sandbox (the config references env-var <em>names</em> only), and the key's call log — tokens, latency, computed cost — is ingested at the highest <span class="mono">gateway</span> provenance.</p></div>
+</section>
+
+<!-- TASK -->
+<section id="task">
+  <p class="kicker">3 · What the agent sees</p>
+  <h2>A task, exactly as it's handed over</h2>
+  <p class="sub">Example: <span class="mono">crm-pipeline-update</span> — close three won deals in a SQLite CRM, then
+    recompute each owner's open pipeline. The agent gets a prompt, a mock CLI, and seed data — nothing else.</p>
+  <div class="code" style="margin-bottom:18px">
+    <div class="cbar"><i style="background:#e0655b"></i><i style="background:#e0b24f"></i><i style="background:#63c088"></i><span class="ct">/workspace/.mak/prompt.txt</span></div>
+<pre>Read TOOLS.md. You are updating the sales CRM in crm.db.
+
+Three deals just closed. Mark these leads as stage <span class="s">'won'</span> with close
+date <span class="s">'2026-07-11'</span>, using the CLI:
+  <span class="v">python tools/crmctl.py update L-003 --stage won --close-date 2026-07-11</span>
+  <span class="v">python tools/crmctl.py update L-007 --stage won --close-date 2026-07-11</span>
+  <span class="v">python tools/crmctl.py update L-010 --stage won --close-date 2026-07-11</span>
+
+Then compute each owner's remaining OPEN pipeline: the sum of <span class="k">amount</span>
+over that owner's leads whose stage is NOT 'won' and NOT 'lost'.
+Write <span class="k">out/pipeline.json</span> mapping each owner's email to their open total.</pre>
+  </div>
+  <div class="panels">
+    <div class="panel">
+      <div class="ph">Its workspace at t = 0</div>
+      <div class="tree">
+/workspace/<br>
+├─ <span class="hi">TOOLS.md</span><span class="dim"> — how to drive the CRM</span><br>
+├─ <span class="hi">crm.db</span><span class="dim"> — SQLite · 12 leads, 3 owners</span><br>
+├─ tools/<span class="dim"> </span><br>
+│&nbsp;&nbsp;└─ <span class="hi">crmctl.py</span><span class="dim"> — mock CRM CLI</span><br>
+└─ .mak/<span class="dim"> — prompt + git baseline</span>
+      </div>
+      <p class="plab" style="margin:16px 0 6px">TOOLS.md — commands</p>
+      <div class="tree" style="font-size:12px">
+crmctl.py <span class="hi">list</span> [--stage &lt;s&gt;]<br>
+crmctl.py <span class="hi">get</span> &lt;id&gt;<br>
+crmctl.py <span class="hi">update</span> &lt;id&gt; --stage &lt;s&gt; [--close-date]
+      </div>
+      <p class="note" style="margin-top:12px;font-size:12.5px">Stages: <span class="mono">prospect · qualified · negotiation · won · lost</span>. A lead is <b style="color:var(--text)">open</b> unless won or lost. A real tool surface over stdlib <span class="mono">sqlite3</span>.</p>
+    </div>
+    <div class="panel">
+      <div class="ph">What a correct solution produces</div>
+      <p class="note" style="font-size:13px;margin-bottom:10px">Mutate the world <em>and</em> report on it: run the three <span class="mono">update</span> commands, then write the recomputed totals.</p>
+      <div class="code">
+        <div class="cbar"><span class="ct">out/pipeline.json — expected</span></div>
+<pre>{
+  <span class="s">"alice@acme.io"</span>: <span class="v">12000.0</span>,
+  <span class="s">"bob@acme.io"</span>:   <span class="v">34000.0</span>,
+  <span class="s">"carol@acme.io"</span>: <span class="v">24000.0</span>
+}</pre>
+      </div>
+      <p class="note" style="margin-top:12px;font-size:12.5px">Distractor leads — two already <span class="mono">won</span>, one <span class="mono">lost</span> — must be excluded. Wrong aggregation, or a skipped step, fails the task.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SCORING -->
+<section id="scoring">
+  <p class="kicker">4 · Verification &amp; scoring</p>
+  <h2>Graded by a container the agent can't touch</h2>
+  <p class="sub">Untrusted code does the work; trusted code does the grading. The two never share a process — so a
+    malicious image can, at worst, fail itself.</p>
+  <div class="panels">
+    <div class="panel agent">
+      <div class="plab">Phase 1 · agent</div>
+      <div class="ph" style="margin-top:6px">Untrusted sandbox</div>
+      <ul><li>Runs in the task image — possibly third-party</li><li>Reads TOOLS.md, calls tools, writes files</li><li>Never sees the hidden <span class="mono">verify/</span> tests</li></ul>
+    </div>
+    <div class="panel verify">
+      <div class="plab">Phase 2 · verifier</div>
+      <div class="ph" style="margin-top:6px">Trusted grader</div>
+      <ul><li>MAKBench-owned image (git · pytest · curl)</li><li>Mounts the frozen workspace <b style="color:var(--bad)">read-only</b></li><li>Grades the resulting state — not <em>how</em> it got there</li></ul>
+    </div>
+  </div>
+  <div class="panels" style="margin-top:18px">
+    <div class="panel">
+      <div class="ph">How <span class="mono" style="font-size:12.5px">crm-pipeline-update</span> scores</div>
+      <p class="note" style="font-size:13px;margin-bottom:10px">Outcome-based. The hidden <span class="mono">test_crm.py</span> opens the mutated workspace and asserts two weighted checks; <span class="mono">pass_threshold = 1.0</span> means both must pass.</p>
+      <div class="mdef" style="margin-bottom:10px"><div class="mn">test_deals_won · 0.4</div><div class="md">L-003/007/010 are stage <span class="mono">won</span>, dated correctly.</div></div>
+      <div class="mdef"><div class="mn">test_pipeline_totals · 0.6</div><div class="md">Recomputes from the live DB; compares JSON within ±0.01.</div></div>
+      <p class="note" style="margin-top:12px;font-size:12px"><b style="color:var(--text)">Anti-triviality:</b> a pristine fixture must <em>fail</em> — so a no-op agent scores zero.</p>
+    </div>
+    <div class="panel">
+      <div class="ph">The metrics</div>
+      <div class="mdefs">
+        <div class="mdef"><div class="mn">correctness</div><div class="md">Weighted graded fraction of one attempt, 0–1.</div></div>
+        <div class="mdef"><div class="mn">pass@1</div><div class="md">Share of attempts clearing the threshold.</div></div>
+        <div class="mdef"><div class="mn">pass^5</div><div class="md">Reliability: share of tasks passing <em>all 5</em> trials.</div></div>
+        <div class="mdef"><div class="mn">cost / success</div><div class="md">Spend incl. failures ÷ passes.</div></div>
+      </div>
+      <p class="note" style="margin-top:12px;font-size:12px"><b style="color:var(--text)">Cost bases never blend:</b> metered <span class="mono">per_token</span> and amortized <span class="mono">flat_rate</span> (shown <span class="mono">~</span>) are different units.</p>
+    </div>
+  </div>
+</section>
+
+<footer><div>
+  <p style="margin:0 0 6px">MAKBench — an open-source, cost-metered agent evaluation harness · 2026.</p>
+  <p style="margin:0"><a href="/">← Back to portfolio</a> &nbsp;·&nbsp; <a href="https://github.com/makkarkartik/makbench" target="_blank" rel="noopener">makkarkartik/makbench ↗</a></p>
+</div></footer>
+
+</div>
+
+<script>
+const DATA = {"cells":[{"agent":"openclaw","model_label":"Opus 4.8","provider":"Anthropic","basis":"per_token","n":10,"passes":9,"pass_at_1":0.9,"mean_correctness":0.93,"cost_of_success":1.0824,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":0.3,"passed":false},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"openclaw","model_label":"Sonnet 5","provider":"Anthropic","basis":"per_token","n":10,"passes":8,"pass_at_1":0.8,"mean_correctness":0.83,"cost_of_success":0.6211,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":0.0,"passed":false},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":0.3,"passed":false},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"openclaw","model_label":"GPT-5.4 mini","provider":"OpenAI","basis":"per_token","n":10,"passes":5,"pass_at_1":0.5,"mean_correctness":0.6,"cost_of_success":0.0354,"tasks":[{"task":"calendar-deconflict","correctness":0.2,"passed":false},{"task":"contract-renewal-sweep","correctness":0.5,"passed":false},{"task":"crm-pipeline-update","correctness":0.0,"passed":false},{"task":"expense-audit","correctness":0.0,"passed":false},{"task":"filesystem-reorg","correctness":0.3,"passed":false},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"openclaw","model_label":"GPT-5.6 sol","provider":"OpenAI","basis":"per_token","n":10,"passes":10,"pass_at_1":1.0,"mean_correctness":1.0,"cost_of_success":0.1375,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"openclaw","model_label":"Gemini 3.1 Pro","provider":"Google","basis":"per_token","n":10,"passes":10,"pass_at_1":1.0,"mean_correctness":1.0,"cost_of_success":0.1353,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"openclaw","model_label":"Gemini 3.5 Flash","provider":"Google","basis":"per_token","n":10,"passes":9,"pass_at_1":0.9,"mean_correctness":0.9,"cost_of_success":0.2131,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":0.0,"passed":false},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"openclaw","model_label":"Gemma 4 31B","provider":"Featherless","basis":"flat_rate","n":10,"passes":8,"pass_at_1":0.8,"mean_correctness":0.82,"cost_of_success":null,"tasks":[{"task":"calendar-deconflict","correctness":0.2,"passed":false},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":0.0,"passed":false}]},{"agent":"openclaw","model_label":"Nemotron 3 Ultra","provider":"Fireworks","basis":"per_token","n":10,"passes":4,"pass_at_1":0.4,"mean_correctness":0.51,"cost_of_success":0.2006,"tasks":[{"task":"calendar-deconflict","correctness":0.2,"passed":false},{"task":"contract-renewal-sweep","correctness":0.5,"passed":false},{"task":"crm-pipeline-update","correctness":0.4,"passed":false},{"task":"expense-audit","correctness":0.0,"passed":false},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":0.0,"passed":false},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":0.0,"passed":false}]},{"agent":"zeptoclaw","model_label":"Sonnet 5","provider":"Anthropic","basis":"per_token","n":10,"passes":8,"pass_at_1":0.8,"mean_correctness":0.8,"cost_of_success":0.1175,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":0.0,"passed":false},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":0.0,"passed":false},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"zeptoclaw","model_label":"GPT-5.6 sol","provider":"OpenAI","basis":"per_token","n":10,"passes":10,"pass_at_1":1.0,"mean_correctness":1.0,"cost_of_success":0.0559,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"zeptoclaw","model_label":"GPT-5.6 terra","provider":"OpenAI","basis":"per_token","n":10,"passes":9,"pass_at_1":0.9,"mean_correctness":0.95,"cost_of_success":0.025,"tasks":[{"task":"calendar-deconflict","correctness":0.5,"passed":false},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"zeptoclaw","model_label":"Gemini 3.5 Flash","provider":"Google","basis":"per_token","n":10,"passes":10,"pass_at_1":1.0,"mean_correctness":1.0,"cost_of_success":0.1295,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]},{"agent":"zeptoclaw","model_label":"Nemotron 3 Ultra","provider":"Fireworks","basis":"per_token","n":10,"passes":8,"pass_at_1":0.8,"mean_correctness":0.8,"cost_of_success":0.049,"tasks":[{"task":"calendar-deconflict","correctness":1.0,"passed":true},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":1.0,"passed":true},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":0.0,"passed":false,"flag":"transient"},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":0.0,"passed":false}]},{"agent":"zeptoclaw","model_label":"Gemma 4 31B","provider":"Featherless","basis":"flat_rate","n":10,"passes":8,"pass_at_1":0.8,"mean_correctness":0.92,"cost_of_success":null,"tasks":[{"task":"calendar-deconflict","correctness":0.5,"passed":false},{"task":"contract-renewal-sweep","correctness":1.0,"passed":true},{"task":"crm-pipeline-update","correctness":1.0,"passed":true},{"task":"expense-audit","correctness":0.7,"passed":false},{"task":"filesystem-reorg","correctness":1.0,"passed":true},{"task":"gmail-inbox-triage","correctness":1.0,"passed":true},{"task":"outlook-schedule-meeting","correctness":1.0,"passed":true},{"task":"quarterly-report-merge","correctness":1.0,"passed":true},{"task":"standup-digest","correctness":1.0,"passed":true},{"task":"support-ticket-routing","correctness":1.0,"passed":true}]}],
+"fiveTrial":{"Sonnet 5":{"provider":"Anthropic","pass_at_1":0.92,"pass_hat_5":0.8,"mean_correctness":0.92,"cost_of_success":0.1168,"n":50,"tasks":[{"task":"calendar-deconflict","passes":5,"n":5,"mc":1.0},{"task":"contract-renewal-sweep","passes":4,"n":5,"mc":0.8},{"task":"crm-pipeline-update","passes":5,"n":5,"mc":1.0},{"task":"expense-audit","passes":5,"n":5,"mc":1.0},{"task":"filesystem-reorg","passes":5,"n":5,"mc":1.0},{"task":"gmail-inbox-triage","passes":5,"n":5,"mc":1.0},{"task":"outlook-schedule-meeting","passes":2,"n":5,"mc":0.4},{"task":"quarterly-report-merge","passes":5,"n":5,"mc":1.0},{"task":"standup-digest","passes":5,"n":5,"mc":1.0},{"task":"support-ticket-routing","passes":5,"n":5,"mc":1.0}]},"GPT-5.6 sol":{"provider":"OpenAI","pass_at_1":1.0,"pass_hat_5":1.0,"mean_correctness":1.0,"cost_of_success":0.0469,"n":50,"tasks":[{"task":"calendar-deconflict","passes":5,"n":5,"mc":1.0},{"task":"contract-renewal-sweep","passes":5,"n":5,"mc":1.0},{"task":"crm-pipeline-update","passes":5,"n":5,"mc":1.0},{"task":"expense-audit","passes":5,"n":5,"mc":1.0},{"task":"filesystem-reorg","passes":5,"n":5,"mc":1.0},{"task":"gmail-inbox-triage","passes":5,"n":5,"mc":1.0},{"task":"outlook-schedule-meeting","passes":5,"n":5,"mc":1.0},{"task":"quarterly-report-merge","passes":5,"n":5,"mc":1.0},{"task":"standup-digest","passes":5,"n":5,"mc":1.0},{"task":"support-ticket-routing","passes":5,"n":5,"mc":1.0}]},"GPT-5.6 terra":{"provider":"OpenAI","pass_at_1":0.84,"pass_hat_5":0.8,"mean_correctness":0.874,"cost_of_success":0.0239,"n":50,"tasks":[{"task":"calendar-deconflict","passes":0,"n":5,"mc":0.2},{"task":"contract-renewal-sweep","passes":5,"n":5,"mc":1.0},{"task":"crm-pipeline-update","passes":5,"n":5,"mc":1.0},{"task":"expense-audit","passes":2,"n":5,"mc":0.54},{"task":"filesystem-reorg","passes":5,"n":5,"mc":1.0},{"task":"gmail-inbox-triage","passes":5,"n":5,"mc":1.0},{"task":"outlook-schedule-meeting","passes":5,"n":5,"mc":1.0},{"task":"quarterly-report-merge","passes":5,"n":5,"mc":1.0},{"task":"standup-digest","passes":5,"n":5,"mc":1.0},{"task":"support-ticket-routing","passes":5,"n":5,"mc":1.0}]},"Gemini 3.5 Flash":{"provider":"Google","pass_at_1":1.0,"pass_hat_5":1.0,"mean_correctness":1.0,"cost_of_success":0.1311,"n":50,"tasks":[{"task":"calendar-deconflict","passes":5,"n":5,"mc":1.0},{"task":"contract-renewal-sweep","passes":5,"n":5,"mc":1.0},{"task":"crm-pipeline-update","passes":5,"n":5,"mc":1.0},{"task":"expense-audit","passes":5,"n":5,"mc":1.0},{"task":"filesystem-reorg","passes":5,"n":5,"mc":1.0},{"task":"gmail-inbox-triage","passes":5,"n":5,"mc":1.0},{"task":"outlook-schedule-meeting","passes":5,"n":5,"mc":1.0},{"task":"quarterly-report-merge","passes":5,"n":5,"mc":1.0},{"task":"standup-digest","passes":5,"n":5,"mc":1.0},{"task":"support-ticket-routing","passes":5,"n":5,"mc":1.0}]},"Nemotron 3 Ultra":{"provider":"Fireworks","pass_at_1":0.64,"pass_hat_5":0.5,"mean_correctness":0.668,"cost_of_success":0.0556,"n":50,"tasks":[{"task":"calendar-deconflict","passes":3,"n":5,"mc":0.68},{"task":"contract-renewal-sweep","passes":1,"n":5,"mc":0.4},{"task":"crm-pipeline-update","passes":5,"n":5,"mc":1.0},{"task":"expense-audit","passes":5,"n":5,"mc":1.0},{"task":"filesystem-reorg","passes":5,"n":5,"mc":1.0},{"task":"gmail-inbox-triage","passes":0,"n":5,"mc":0.0},{"task":"outlook-schedule-meeting","passes":3,"n":5,"mc":0.6},{"task":"quarterly-report-merge","passes":5,"n":5,"mc":1.0},{"task":"standup-digest","passes":5,"n":5,"mc":1.0},{"task":"support-ticket-routing","passes":0,"n":5,"mc":0.0}]}}};
+
+(function(){
+  const $=s=>document.querySelector(s);
+  const AName={openclaw:"OpenClaw",zeptoclaw:"ZeptoClaw"};
+  const state={trials:"1",agent:"all",metric:"pass_at_1",sortK:"pass_at_1",sortDir:-1};
+
+  // Build a uniform cell list for the current trials view.
+  function cellsFor(trials){
+    if(trials==="1") return DATA.cells;
+    return Object.entries(DATA.fiveTrial).map(([label,d])=>({
+      agent:"zeptoclaw",model_label:label,provider:d.provider,basis:"per_token",
+      pass_at_1:d.pass_at_1,pass_hat_5:d.pass_hat_5,mean_correctness:d.mean_correctness,
+      cost_of_success:d.cost_of_success,n:d.n,tasks5:d.tasks }));
+  }
+  function val(c){ if(!c)return null;
+    if(state.metric==="cost_of_success") return c.basis==="flat_rate"?null:c.cost_of_success;
+    if(state.metric==="pass_hat_5") return c.pass_hat_5==null?null:c.pass_hat_5;
+    return c[state.metric]; }
+
+  function drawChart(){
+    const host=$("#chart"); host.innerHTML="";
+    const isCost=state.metric==="cost_of_success";
+    const src=cellsFor(state.trials);
+    const models=[...new Set(src.map(c=>c.model_label))];
+    let rows=models.map(m=>({m,
+      o:src.find(c=>c.model_label===m&&c.agent==="openclaw"),
+      z:src.find(c=>c.model_label===m&&c.agent==="zeptoclaw")}))
+      .filter(r=> state.agent==="openclaw"?r.o: state.agent==="zeptoclaw"?r.z : (r.o||r.z));
+    let max=isCost?Math.max(0.01,...rows.flatMap(r=>[val(r.o),val(r.z)]).filter(v=>v!=null)):1;
+    if(isCost)max*=1.1;
+    rows.sort((a,b)=>Math.max(val(b.o)??-1,val(b.z)??-1)-Math.max(val(a.o)??-1,val(a.z)??-1));
+    $("#chartAxis").textContent = isCost ? ("$0 — $"+max.toFixed(2)+"  ·  per-token only") : "0 — 100%";
+    const showBoth=state.agent==="all"&&state.trials==="1";
+    rows.forEach(r=>{
+      const prov=(r.o||r.z).provider;
+      const bar=(c,who,cls)=>{
+        const v=val(c);
+        if(v==null){ const txt=c?(isCost?"~ flat-rate (not metered)":"—"):"—";
+          return `<div class="brow"><span class="who">${who}</span><div class="track"><div class="fill empty">${txt}</div></div></div>`; }
+        const w=Math.max(3,(v/max)*100), lab=isCost?("$"+v.toFixed(3)):v.toFixed(2);
+        return `<div class="brow"><span class="who">${who}</span><div class="track"><div class="fill ${cls}" style="width:${w}%">${lab}</div></div></div>`;
+      };
+      let bars="";
+      if(showBoth) bars=bar(r.o,"OpenClaw","open")+bar(r.z,"ZeptoClaw","zepto");
+      else if(state.agent==="openclaw") bars=bar(r.o,"OpenClaw","open");
+      else bars=bar(r.z,"ZeptoClaw","zepto");
+      host.insertAdjacentHTML("beforeend",
+        `<div class="mrow"><div class="mname"><span>${r.m}</span><span class="prov">${prov}</span></div><div class="bpair">${bars}</div></div>`);
+    });
+  }
+
+  function fmtCost(c){ if(c.basis==="flat_rate")return '<span class="muted mono">~ flat</span>'; return c.cost_of_success==null?"∞":"$"+c.cost_of_success.toFixed(3); }
+  function scoreClass(v){ return v>=0.8?"good":v>=0.5?"":"bad"; }
+
+  function drawTable(){
+    const tb=$("#rows"); tb.innerHTML="";
+    let rows=cellsFor(state.trials).filter(c=>state.agent==="all"||c.agent===state.agent);
+    const k=state.sortK,dir=state.sortDir;
+    rows=rows.slice().sort((a,b)=>{
+      if(k==="agent"||k==="model_label")return dir*String(a[k]).localeCompare(String(b[k]));
+      const av=a[k]==null?-1:a[k], bv=b[k]==null?-1:b[k]; return dir*(av-bv);
+    });
+    rows.forEach(c=>{
+      const tr=document.createElement("tr"); tr.className="row"; tr.tabIndex=0;
+      const p5 = c.pass_hat_5==null ? '<span class="muted">—</span>' : c.pass_hat_5.toFixed(2);
+      tr.innerHTML=`
+        <td class="name"><span class="adot" style="background:var(--${c.agent==='openclaw'?'open':'zepto'})"></span>${AName[c.agent]}</td>
+        <td class="name">${c.model_label} <span class="muted" style="font-weight:400">· ${c.provider}</span></td>
+        <td class="num ${scoreClass(c.pass_at_1)}">${c.pass_at_1.toFixed(2)}</td>
+        <td class="num">${p5}</td>
+        <td class="num">${c.mean_correctness.toFixed(2)}</td>
+        <td class="num">${fmtCost(c)}</td>`;
+      const ex=document.createElement("tr"); ex.className="expr"; ex.style.display="none";
+      let chips;
+      if(state.trials==="5"&&c.tasks5){
+        chips=c.tasks5.map(t=>{const col=t.passes===t.n?'good':(t.passes>0?'partial':'bad');
+          return `<div class="tchip"><span class="ts" style="background:var(--${col})"></span><span class="tn">${t.task}</span><span class="tsc">${t.passes}/${t.n}</span></div>`;}).join("");
+      } else {
+        chips=c.tasks.map(t=>{const col=t.passed?'good':(t.correctness>0?'partial':'bad');
+          return `<div class="tchip"><span class="ts" style="background:var(--${col})"></span><span class="tn">${t.task}${t.flag?' <span class="muted" style="font-size:9px">(transient)</span>':''}</span><span class="tsc">${t.correctness.toFixed(2)}</span></div>`;}).join("");
+      }
+      const head = state.trials==="5"
+        ? `${c.tasks5.filter(t=>t.passes===t.n).length}/10 tasks pass all 5 · ${AName[c.agent]} × ${c.model_label} (${c.n} attempts)`
+        : `${c.passes}/${c.n} tasks passed · ${AName[c.agent]} × ${c.model_label}`;
+      ex.innerHTML=`<td colspan="6"><div class="expin"><div class="eh">${head}</div><div class="tgrid">${chips}</div></div></td>`;
+      const tog=()=>{ex.style.display=ex.style.display==="none"?"table-row":"none";};
+      tr.addEventListener("click",tog);
+      tr.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tog();}});
+      tb.appendChild(tr); tb.appendChild(ex);
+    });
+  }
+
+  function applyTrialsConstraints(){
+    const five=state.trials==="5";
+    // pass^5 metric only at 5 trials
+    const p5btn=document.querySelector('#fMetric button[data-v="pass_hat_5"]');
+    p5btn.disabled=!five;
+    // OpenClaw has no 5-trial data yet
+    const ocBtn=document.querySelector('#fAgent button[data-v="openclaw"]');
+    ocBtn.disabled=five;
+    if(five && state.agent==="openclaw") setSeg("fAgent","agent","all");
+    if(!five && state.metric==="pass_hat_5") setSeg("fMetric","metric","pass_at_1");
+    // note
+    const note=$("#viewNote");
+    if(five){
+      note.innerHTML='<p style="margin:0"><b>5-trial reliability view — ZeptoClaw.</b> <span style="color:var(--muted)">Each cell is 10 tasks × 5 trials (50 attempts). <span class="mono">pass^5</span> = share of tasks that pass all five times. OpenClaw’s 5-trial run and Gemma’s are still to land, so this view is ZeptoClaw across the five per-token models.</span></p>';
+      note.style.borderLeftColor="var(--zepto)";
+    } else {
+      note.innerHTML='<p style="margin:0"><b>1-trial cross-agent comparison.</b> <span style="color:var(--muted)">Single-run numbers (coarse; ±0.1 swings are normal). Gemini 3.1 Pro shows for OpenClaw only — the ZeptoClaw run is pending a provider daily-quota reset. Switch to <b style="color:var(--text)">5 trials</b> for the reliability view.</span></p>';
+      note.style.borderLeftColor="var(--warn)";
+    }
+  }
+  function setSeg(id,key,v){
+    state[key]=v;
+    document.querySelectorAll(`#${id} button`).forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===v?"true":"false"));
+  }
+  function wireSeg(id,key,after){
+    document.querySelectorAll(`#${id} button`).forEach(b=>b.addEventListener("click",()=>{
+      if(b.disabled)return; setSeg(id,key,b.dataset.v); after&&after(); drawChart(); drawTable();
+    }));
+  }
+  wireSeg("fTrials","trials",applyTrialsConstraints);
+  wireSeg("fAgent","agent");
+  wireSeg("fMetric","metric");
+  document.querySelectorAll("#board thead th").forEach(th=>th.addEventListener("click",()=>{
+    const k=th.dataset.k;
+    if(state.sortK===k)state.sortDir*=-1; else{state.sortK=k;state.sortDir=(k==="agent"||k==="model_label")?1:-1;}
+    drawTable();
+  }));
+  applyTrialsConstraints(); drawChart(); drawTable();
+})();
+</script>
+</body>
+</html>
