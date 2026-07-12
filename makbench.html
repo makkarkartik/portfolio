@@ -180,9 +180,9 @@
   </div>
   <div class="stats">
     <div class="stat"><div class="v">2</div><div class="l">Agents compared head-to-head</div></div>
-    <div class="stat"><div class="v">9</div><div class="l">LLMs under test across 5 providers</div></div>
+    <div class="stat"><div class="v">6</div><div class="l">LLMs under test across 5 providers</div></div>
     <div class="stat"><div class="v">10</div><div class="l">Enterprise tool-use tasks</div></div>
-    <div class="stat"><div class="v">440</div><div class="l">Graded, cost-metered attempts</div></div>
+    <div class="stat"><div class="v">410</div><div class="l">Graded, cost-metered attempts</div></div>
   </div>
 </header>
 
@@ -190,9 +190,10 @@
 <section id="results">
   <p class="kicker">1 · Results explorer</p>
   <h2>ZeptoClaw vs OpenClaw, model by model</h2>
-  <p class="sub">Two views: a <strong>head-to-head</strong> of both agents across nine models (1 trial), and a
-    <strong>reliability deep-dive</strong> where every task runs 5× (ZeptoClaw, six models). Pick a metric,
-    and <strong>click any row in the table for the per-task breakdown</strong>.</p>
+  <p class="sub">One model set, two views: a <strong>head-to-head</strong> of both agents (1 trial per task), and a
+    <strong>reliability deep-dive</strong> where every task runs 5× (ZeptoClaw). Six models — only those with
+    <strong>both</strong> runs are published. Pick a metric, and <strong>click any row in the table for the
+    per-task breakdown</strong>.</p>
 
   <div class="callout" id="viewNote"></div>
 
@@ -401,9 +402,12 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
   const AName={openclaw:"OpenClaw",zeptoclaw:"ZeptoClaw"};
   const state={trials:"1",metric:"pass_at_1",sortK:"pass_at_1",sortDir:-1};
 
+  // Publish only models that have BOTH a 1-trial and a 5-trial run — one model set everywhere.
+  const KEEP=new Set(Object.keys(DATA.fiveTrial));
+
   // Build a uniform cell list for the current trials view.
   function cellsFor(trials){
-    if(trials==="1") return DATA.cells;
+    if(trials==="1") return DATA.cells.filter(c=>KEEP.has(c.model_label));
     return Object.entries(DATA.fiveTrial).map(([label,d])=>({
       agent:"zeptoclaw",model_label:label,provider:d.provider,basis:d.basis||"per_token",
       pass_at_1:d.pass_at_1,pass_hat_5:d.pass_hat_5,mean_correctness:d.mean_correctness,
@@ -492,7 +496,7 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
   const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   function taskStats(id){
     let a=0,ap=0,t=0,tp=0;
-    DATA.cells.forEach(c=>{const x=c.tasks.find(y=>y.task===id); if(x){a++; if(x.passed)ap++;}});
+    cellsFor("1").forEach(c=>{const x=c.tasks.find(y=>y.task===id); if(x){a++; if(x.passed)ap++;}});
     Object.values(DATA.fiveTrial).forEach(d=>{const x=d.tasks.find(y=>y.task===id); if(x){t+=x.n; tp+=x.passes;}});
     return {a,ap,t,tp};
   }
@@ -549,7 +553,7 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
       note.innerHTML='<p style="margin:0"><b>Reliability view — ZeptoClaw, 10 tasks × 5 trials per model (50 attempts each).</b> <span style="color:var(--muted)"><span class="mono">pass^5</span> = share of tasks that pass all five times — the "can I rely on it?" number. OpenClaw’s 5-trial campaign hasn’t run yet, so this view is ZeptoClaw across six models.</span></p>';
       note.style.borderLeftColor="var(--zepto)";
     } else {
-      note.innerHTML='<p style="margin:0"><b>Head-to-head — OpenClaw vs ZeptoClaw, one trial per task.</b> <span style="color:var(--muted)">Single-run numbers are coarse (±0.1 swings are normal — see the reliability view). Gemini 3.1 Pro shows for OpenClaw only; the ZeptoClaw run is pending a provider daily-quota reset.</span></p>';
+      note.innerHTML='<p style="margin:0"><b>Head-to-head — OpenClaw vs ZeptoClaw, one trial per task.</b> <span style="color:var(--muted)">Single-run numbers are coarse (±0.1 swings are normal — see the reliability view). Only the six models with both a 1-trial and a 5-trial run are shown; OpenClaw hasn’t run GPT-5.6 terra, so that cell shows —.</span></p>';
       note.style.borderLeftColor="var(--warn)";
     }
   }
