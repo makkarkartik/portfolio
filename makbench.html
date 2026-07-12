@@ -223,7 +223,7 @@
         <button data-v="pass_hat_5" aria-pressed="false" hidden>pass^5</button>
         <button data-v="mean_correctness" aria-pressed="false">correctness</button>
         <button data-v="cost_of_success" aria-pressed="false">cost / success</button>
-        <button data-v="s" aria-pressed="false">speed</button>
+        <button data-v="s" aria-pressed="false">time / attempt</button>
       </div>
     </div>
     <div class="legend" id="legend">
@@ -248,7 +248,7 @@
         <th data-k="pass_hat_5">pass^5</th>
         <th data-k="mean_correctness">correctness</th>
         <th data-k="cost_of_success">cost / success</th>
-        <th data-k="s">avg s</th>
+        <th data-k="s">time (s)</th>
       </tr></thead>
       <tbody id="rows"></tbody>
     </table>
@@ -462,7 +462,7 @@ const TELEM={"openclaw|Sonnet 5|1":{"s":39.9,"ti":234892,"to":2712,"calls":8.0,"
     const dir=isSec?-1:1;  // speed: fastest first
     rows.sort((a,b)=>dir*(Math.max(val(b.o)??-1,val(b.z)??-1)-Math.max(val(a.o)??-1,val(a.z)??-1)));
     $("#chartAxis").textContent = isCost ? ("$0 — $"+max.toFixed(2)+"  ·  per-token only")
-      : isSec ? ("0 — "+max.toFixed(0)+"s  ·  avg active seconds per attempt, lower is better") : "0 — 100%";
+      : isSec ? ("0 — "+max.toFixed(0)+"s  ·  avg active working time per attempt, shortest first") : "0 — 100%";
     const showBoth=state.trials==="1";
     rows.forEach(r=>{
       const prov=(r.o||r.z).provider;
@@ -633,7 +633,7 @@ const TELEM={"openclaw|Sonnet 5|1":{"s":39.9,"ti":234892,"to":2712,"calls":8.0,"
       pass_hat_5: "<b>pass^5</b> = tasks passed <b>all five times</b> ÷ 10 tasks. Reliability, not ability — pass a task 4 times out of 5 and it still counts 0 here. Sonnet: 8 of 10 tasks went 5-for-5 → 0.80.",
       mean_correctness: "<b>correctness</b> is not a pass rate — it’s the average <b>score</b>. Every attempt earns 0–1 from the weighted hidden checks, and near-misses count: doing 70% of the job adds 0.7 here but 0 to pass@1.",
       cost_of_success: "<b>cost / success</b> = everything spent on that agent×model — <b>failed attempts included</b> — divided by the number of passes. Per-token metered at the gateway; flat-rate hosting (Gemma) is excluded.",
-      s: "<b>speed</b> = average <b>active seconds per attempt</b> — time the agent actually worked (container queue/setup excluded), fastest first. Expand any table row for the rest of the telemetry: tokens in/out, model calls, cost per attempt."
+      s: "<b>time / attempt</b> = average <b>active working time</b> from prompt handed over to agent done — model thinking + tool execution, container queue/setup excluded. Not per-call API latency. Expand any table row for the rest of the telemetry: tokens in/out, model calls, cost per attempt."
     };
     $("#metricNote").innerHTML=M[state.metric]||"";
   }
