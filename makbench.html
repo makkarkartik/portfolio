@@ -170,7 +170,7 @@
 <nav><div class="wrap">
   <a class="back" href="/">&larr;&nbsp; Kartik Makkar</a>
   <div class="navlinks">
-    <a href="#results">Results</a><a href="#how">Harness</a><a href="#task">A task</a><a href="#scoring">Scoring</a>
+    <a href="#results">Results</a><a href="#nemotron">Nemotron</a><a href="#how">Harness</a><a href="#task">A task</a><a href="#scoring">Scoring</a>
   </div>
 </div></nav>
 
@@ -287,7 +287,8 @@
   </div>
   <p class="note" style="margin-top:14px;font-size:12.5px">Why it matters here: Gemma's <b style="color:var(--text)">32K context cap</b> is
     the direct cause of its expense-audit 0/5 (the token-heaviest task) — the model may be fine; the serving plan isn't.
-    Nemotron runs a <b style="color:var(--text)">4-bit NVFP4</b> build, so its scores measure that build, not the fp8/bf16 release.
+    Nemotron runs a <b style="color:var(--text)">4-bit NVFP4</b> build, so its scores measure that build, not the fp8/bf16 release —
+    and independently re-tested below as a real agent-loop gap (<a href="#nemotron">§ Nemotron</a>).
     Sonnet 5 prices are the introductory $2/$10 (through 2026-08); Nemotron's prices are pinned in <span class="mono">providers.yaml</span>
     because it's not in LiteLLM's price map. First-party APIs serve unquantized (or vendor-managed) builds.</p>
 </section>
@@ -331,6 +332,83 @@
   <p class="note" id="cubeNote" style="font-size:12.5px;margin:10px 0 12px"></p>
   <div class="tablewrap">
     <table id="dotmat"><thead></thead><tbody></tbody><tfoot></tfoot></table>
+  </div>
+</section>
+
+<!-- NEMOTRON FINDING -->
+<section id="nemotron">
+  <p class="kicker">Independent evaluation</p>
+  <h2>Why Nemotron 3 Ultra trails every peer</h2>
+  <p class="sub">On the published board Nemotron is last on both scaffolds — ZeptoClaw
+    <strong>0.64 / pass^5 0.50</strong>, OpenClaw <strong>0.32 / pass^5 0.00</strong> — while Fireworks
+    <strong>gpt-oss-120B</strong> on the same host clears ~1.0 on OpenClaw. Is that a harsh grader, or a real gap?
+    We re-tested with a two-arm protocol that separates “can the model follow the contract?” from “does the agent
+    loop finish the writes?”</p>
+
+  <div class="panels">
+    <div class="panel">
+      <div class="plab">Arm A · chat-only</div>
+      <div class="ph" style="margin-top:6px">No agent, exact contract</div>
+      <p class="note" style="font-size:13px;margin:8px 0 0">Same prompt to Nemotron and gpt-oss: emit
+        <span class="mono">out/violations.csv</span> with header exactly <span class="mono">txn_id,reason</span>,
+        plus <span class="mono">out/report.md</span> containing <span class="mono">1172.00</span>, as a JSON map of
+        path → file body. No Docker agent, no OpenClaw, no grader image — just instruction following.</p>
+    </div>
+    <div class="panel">
+      <div class="plab">Arm B · live harness</div>
+      <div class="ph" style="margin-top:6px">OpenClaw × expense-audit</div>
+      <p class="note" style="font-size:13px;margin:8px 0 0">Identical MAKBench path the same day: plan → filter to
+        <span class="mono">expense-audit</span> → <span class="mono">run-one</span>. Same agent YAML, sandbox,
+        gateway, and hidden pytest checks. Control is Fireworks <span class="mono">gpt-oss-120b</span>.</p>
+    </div>
+  </div>
+
+  <div class="tablewrap" style="margin-top:18px">
+    <table>
+      <thead><tr>
+        <th style="text-align:left">Arm</th>
+        <th style="text-align:left">Nemotron 3 Ultra (NVFP4)</th>
+        <th style="text-align:left">gpt-oss-120B (Fireworks control)</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td class="name">A · Chat-only contract</td>
+          <td class="num good">pass</td>
+          <td class="num good">pass</td>
+        </tr>
+        <tr>
+          <td class="name">B · OpenClaw × expense-audit</td>
+          <td class="num bad">fail · corr 0.0 · missing <span class="mono">out/*</span></td>
+          <td class="num good">pass · corr 1.0 · $0.018</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout" style="margin-top:18px">
+    <p style="margin:0"><b>Verdict — real gap, not a scoring bug.</b> Nemotron can obey the exact artifact contract
+      in chat. Under OpenClaw it often never finishes the graded writes (this smoke: read/exec only, reasoning-only
+      turn → incomplete response, both checks <span class="mono">FileNotFoundError</span> on
+      <span class="mono">violations.csv</span> / <span class="mono">report.md</span>, ~$0.055 spent). Campaign history
+      shows the sibling failure mode: freestyle filenames or CSV headers when files <em>are</em> written. Either way
+      the deliverable isn’t there — and the control clears the same bar cold. Softening grading to “roughly understood
+      the task” would measure a different skill; peers already pass the current one.</p>
+  </div>
+
+  <div class="mdefs" style="margin-top:18px">
+    <div class="mdef">
+      <div class="mn">What we ruled out</div>
+      <div class="md">Broken gateway / missing python3 / wrong workspace · “needs more thinking”
+        (<span class="mono">reasoning_effort</span> none/high/max) · “reasoning parser” bug (forcing reasoning off
+        made Zepto <em>worse</em>) · Fireworks hosting (gpt-oss on the same route ≈ 1.0).</div>
+    </div>
+    <div class="mdef">
+      <div class="mn">What the scores measure</div>
+      <div class="md">The served <b style="color:var(--text)">NVFP4</b> build in the gateway id — not an fp8/bf16
+        A/B. Scaffold still matters (Zepto friendlier than OpenClaw) but Nemotron stays last on both. Full write-up +
+        reproducer:
+        <a href="https://github.com/makkarkartik/makbench/blob/main/docs/FINDINGS_NEMOTRON_ULTRA.md" target="_blank" rel="noopener">FINDINGS_NEMOTRON_ULTRA.md ↗</a>.</div>
+    </div>
   </div>
 </section>
 
@@ -406,7 +484,8 @@
       <p class="note" style="font-size:13px;margin-bottom:10px">Outcome-based. The hidden <span class="mono">test_crm.py</span> opens the mutated workspace and asserts two weighted checks; <span class="mono">pass_threshold = 1.0</span> means both must pass.</p>
       <div class="mdef" style="margin-bottom:10px"><div class="mn">test_deals_won · 0.4</div><div class="md">L-003/007/010 are stage <span class="mono">won</span>, dated correctly.</div></div>
       <div class="mdef"><div class="mn">test_pipeline_totals · 0.6</div><div class="md">Recomputes from the live DB; compares JSON within ±0.01.</div></div>
-      <p class="note" style="margin-top:12px;font-size:12px"><b style="color:var(--text)">Anti-triviality:</b> a pristine fixture must <em>fail</em> — so a no-op agent scores zero.</p>
+      <p class="note" style="margin-top:12px;font-size:12px"><b style="color:var(--text)">Anti-triviality:</b> a pristine fixture must <em>fail</em> — so a no-op agent scores zero.
+        Exact <span class="mono">out/*</span> contracts are intentional; see <a href="#nemotron">why that isn't “grader pedantry”</a> for Nemotron.</p>
     </div>
     <div class="panel">
       <div class="ph">The metrics</div>
