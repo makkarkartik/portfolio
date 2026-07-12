@@ -218,6 +218,8 @@
     </div>
   </div>
 
+  <p class="note" id="metricNote" style="margin:14px 0 0;font-size:12.5px"></p>
+
   <div class="chartcard" style="margin-bottom:22px">
     <div id="chart"></div>
     <p class="axis" id="chartAxis">0 — 100%</p>
@@ -545,6 +547,21 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
     }).join("");
   }
 
+  // One plain-English sentence for the selected metric in the selected view — the same
+  // number means subtly different things at 1 vs 5 trials, so say which.
+  function metricNote(){
+    const five=state.trials==="5";
+    const M={
+      pass_at_1: five
+        ? "<b>pass@1</b> here = share of all <b>50 attempts</b> (10 tasks × 5 trials) that pass. Same “does one try succeed?” probability as the head-to-head view — just estimated five times more precisely."
+        : "<b>pass@1</b> = share of the <b>10 tasks</b> passed, one attempt each. Coarse: one lucky or unlucky run moves it by 0.1.",
+      pass_hat_5: "<b>pass^5</b> = share of the 10 tasks that pass <b>all five</b> trials. This measures reliability, not ability — a model can pass a task 4/5 times and still score 0 on it here.",
+      mean_correctness: "<b>correctness</b> = average of each attempt’s graded score (0–1, from the weighted hidden checks). Partial credit counts — a 0.5 near-miss lifts correctness but not pass@1.",
+      cost_of_success: "<b>cost / success</b> = everything spent on that agent×model — <b>failed attempts included</b> — divided by the number of passes. Per-token metered at the gateway; flat-rate hosting (Gemma) is excluded."
+    };
+    $("#metricNote").innerHTML=M[state.metric]||"";
+  }
+
   function applyView(){
     const five=state.trials==="5";
     // pass^5 is only computable at 5 trials — hide it entirely elsewhere (a greyed
@@ -569,7 +586,7 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
   }
   function wireSeg(id,key,after){
     document.querySelectorAll(`#${id} button`).forEach(b=>b.addEventListener("click",()=>{
-      if(b.disabled)return; setSeg(id,key,b.dataset.v); after&&after(); drawChart(); drawTable(); drawHeat();
+      if(b.disabled)return; setSeg(id,key,b.dataset.v); after&&after(); metricNote(); drawChart(); drawTable(); drawHeat();
     }));
   }
   wireSeg("fView","trials",applyView);
@@ -579,7 +596,7 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
     if(state.sortK===k)state.sortDir*=-1; else{state.sortK=k;state.sortDir=(k==="agent"||k==="model_label")?1:-1;}
     drawTable();
   }));
-  applyView(); drawChart(); drawTable(); drawHeat();
+  applyView(); metricNote(); drawChart(); drawTable(); drawHeat();
 })();
 </script>
 </body>
