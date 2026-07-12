@@ -246,6 +246,29 @@
   <div class="tablewrap">
     <table id="heat"><thead></thead><tbody></tbody></table>
   </div>
+
+  <h3 style="margin:36px 0 6px;font-size:17px">What exactly ran — models, weights, hosting</h3>
+  <p class="note" style="margin:0 0 14px;font-size:13px">Scores depend on more than the model name: the exact build,
+    where it's served, and any quantization or context cap. Proprietary vendors don't disclose parameter counts.
+    The <span class="mono">model id</span> is the literal string the gateway routes.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="text-align:left">Model</th><th style="text-align:left">Parameters</th><th style="text-align:left">Weights</th><th style="text-align:left">Served from</th><th style="text-align:left">Gateway model id</th><th>$ / MTok in · out</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Claude Sonnet 5</td><td>not disclosed</td><td>proprietary</td><td>Anthropic API (first-party)</td><td class="name"><span class="mono" style="font-size:11.5px">anthropic/claude-sonnet-5</span></td><td class="num">2.00 · 10.00</td></tr>
+        <tr><td class="name">GPT-5.6 sol</td><td>not disclosed</td><td>proprietary</td><td>OpenAI API (first-party)</td><td class="name"><span class="mono" style="font-size:11.5px">openai/gpt-5.6-sol</span></td><td class="num">5.00 · 30.00</td></tr>
+        <tr><td class="name">GPT-5.6 terra</td><td>not disclosed</td><td>proprietary</td><td>OpenAI API (first-party)</td><td class="name"><span class="mono" style="font-size:11.5px">openai/gpt-5.6-terra</span></td><td class="num">2.50 · 15.00</td></tr>
+        <tr><td class="name">Gemini 3.5 Flash</td><td>not disclosed</td><td>proprietary</td><td>Google Gemini API (first-party)</td><td class="name"><span class="mono" style="font-size:11.5px">gemini/gemini-3.5-flash</span></td><td class="num">1.50 · 9.00</td></tr>
+        <tr><td class="name">Gemma 4 31B</td><td>31 B dense</td><td>open (Google)</td><td>Featherless — flat-rate plan, <b style="color:var(--warn)">32K context cap</b></td><td class="name"><span class="mono" style="font-size:11.5px">featherless/google/gemma-4-31B-it</span></td><td class="num">flat ~</td></tr>
+        <tr><td class="name">Nemotron 3 Ultra</td><td>550 B MoE · 55 B active</td><td>open (NVIDIA, OpenMDW)</td><td>Fireworks — <b style="color:var(--warn)">NVFP4 4-bit build</b></td><td class="name"><span class="mono" style="font-size:11.5px">fireworks/…/nemotron-3-ultra-nvfp4</span></td><td class="num">0.60 · 2.40</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note" style="margin-top:14px;font-size:12.5px">Why it matters here: Gemma's <b style="color:var(--text)">32K context cap</b> is
+    the direct cause of its expense-audit 0/5 (the token-heaviest task) — the model may be fine; the serving plan isn't.
+    Nemotron runs a <b style="color:var(--text)">4-bit NVFP4</b> build, so its scores measure that build, not the fp8/bf16 release.
+    Sonnet 5 prices are the introductory $2/$10 (through 2026-08); Nemotron's prices are pinned in <span class="mono">providers.yaml</span>
+    because it's not in LiteLLM's price map. First-party APIs serve unquantized (or vendor-managed) builds.</p>
 </section>
 
 <!-- READ -->
