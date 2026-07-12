@@ -223,6 +223,7 @@
         <button data-v="pass_hat_5" aria-pressed="false" hidden>pass^5</button>
         <button data-v="mean_correctness" aria-pressed="false">correctness</button>
         <button data-v="cost_of_success" aria-pressed="false">cost / success</button>
+        <button data-v="s" aria-pressed="false">speed</button>
       </div>
     </div>
     <div class="legend" id="legend">
@@ -247,6 +248,7 @@
         <th data-k="pass_hat_5">pass^5</th>
         <th data-k="mean_correctness">correctness</th>
         <th data-k="cost_of_success">cost / success</th>
+        <th data-k="s">avg s</th>
       </tr></thead>
       <tbody id="rows"></tbody>
     </table>
@@ -419,6 +421,10 @@ const DATA = {"cells":[{"agent":"openclaw","model_label":"Opus 4.8","provider":"
 // The full enterprise-mini pack: verbatim prompts + hidden verifier checks, straight from each task.yaml.
 const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by moving the lower-priority meeting","difficulty":3,"tags":["calendar","scheduling","tool-use","constraints"],"prompt":"Read TOOLS.md. Your own calendar for 2026-07-15 has a DOUBLE-BOOKING: two meetings\noverlap in time. Every event has an integer \"priority\" field (1 = highest).\n\nResolve the conflict:\n  - Keep the HIGHER-priority meeting exactly where it is.\n  - MOVE the LOWER-priority overlapping meeting to the EARLIEST free time slot of the\n    SAME duration, later that same day. Its new start must be strictly AFTER its\n    original start and the whole meeting must fit within 09:00-17:00.\n  - Keep the moved meeting's title, id, and duration unchanged; only its start and end\n    times change. After the move, no two events on 2026-07-15 may overlap.\n\nInspect the calendar with `python tools/calctl.py list --date 2026-07-15` and\n`python tools/calctl.py freebusy --user you@acme.io --date 2026-07-15`, then edit\ncalendar/events.json to reflect the moved meeting.","checks":[{"name":"high_priority_unchanged","weight":0.2,"type":"pytest"},{"name":"retro_moved_earliest","weight":0.5,"type":"pytest"},{"name":"no_overlaps","weight":0.3,"type":"pytest"}]},{"id":"contract-renewal-sweep","title":"Sweep vendor contracts for upcoming renewals and notify owners","difficulty":2,"tags":["procurement","tool-use","dates","email","spreadsheet"],"prompt":"You are running a vendor contract-renewal sweep. Read TOOLS.md, then use\n`python tools/vendorctl.py list` (and `python tools/vendorctl.py get <id>` for\ndetail) to review the vendor registry.\n\nThe reference date for this sweep is 2026-07-11. Find EVERY vendor whose contract\nends within the next 45 days — that is, whose contract_end is on or after the\nreference date 2026-07-11 and on or before 2026-08-25. Vendors whose contract ends\nafter 2026-08-25 are NOT in scope.\n\nFor EACH in-scope vendor, do BOTH of the following:\n\n1. Send a renewal-reminder email to that vendor's owner_email:\n     python tools/mailctl.py send --to <owner_email> \\\n       --subject \"Renewal reminder: <vendor name>\" \\\n       --body \"<a short note that the contract ends on <contract_end> and asks to start renewal>\"\n\n2. Add one row to out/renewals.csv (create the out/ directory). The file must have\n   exactly this header line first:\n     vendor_id,name,contract_end,owner_email\n   then one row per in-scope vendor with those four fields.\n\nDo not email or list vendors whose contracts end after the 45-day window.","checks":[{"name":"renewals_set","weight":0.5,"type":"pytest"},{"name":"emails_sent","weight":0.5,"type":"pytest"}]},{"id":"crm-pipeline-update","title":"Close three won deals and recompute each owner's open pipeline","difficulty":3,"tags":["crm","sqlite","tool-use","aggregation"],"prompt":"Read TOOLS.md. You are updating the sales CRM in crm.db.\n\nThree deals just closed. Mark these leads as stage 'won' with close date\n'2026-07-11', using the CLI:\n    python tools/crmctl.py update L-003 --stage won --close-date 2026-07-11\n    python tools/crmctl.py update L-007 --stage won --close-date 2026-07-11\n    python tools/crmctl.py update L-010 --stage won --close-date 2026-07-11\n\nThen compute each owner's remaining OPEN pipeline: the sum of `amount` over that\nowner's leads whose stage is NOT 'won' and NOT 'lost' (using the state AFTER your\nthree updates above).\n\nWrite out/pipeline.json (create the out/ directory) as a JSON object mapping each\nowner's email to their open-pipeline total, including every owner that still has at\nleast one open lead. Example shape:\n    {\"alice@acme.io\": 12345.0, \"bob@acme.io\": 6789.0}","checks":[{"name":"deals_won","weight":0.4,"type":"pytest"},{"name":"pipeline_totals","weight":0.6,"type":"pytest"}]},{"id":"expense-audit","title":"Audit an expense ledger against the reimbursement policy","difficulty":2,"tags":["finance","policy","tool-use","data-processing"],"prompt":"You are auditing a corporate expense ledger. Read TOOLS.md, then view the\nreimbursement policy with `python tools/policyctl.py show` and review every row of\n`expenses/transactions.csv`.\n\nA transaction VIOLATES the policy if ANY of these hold:\n  (a) its category is in the policy's disallowed_categories, OR\n  (b) its amount exceeds category_caps[category], OR\n  (c) its amount exceeds receipt_required_over AND it has no receipt\n      (has_receipt is false).\n\nWhen more than one applies to the same transaction, report the SINGLE\nhighest-precedence reason using this order:\n  disallowed_category > over_cap > missing_receipt\n\nProduce two files under out/ (create the directory):\n\n1. out/violations.csv — a CSV with header `txn_id,reason`, one row per violating\n   transaction, where reason is exactly one of:\n     disallowed_category, over_cap, missing_receipt\n   chosen by the precedence above.\n\n2. out/report.md — a short markdown report stating the total REIMBURSABLE amount,\n   defined as the sum of the amounts of all NON-violating transactions. Format the\n   number as a plain decimal (for example, 1234.50).","checks":[{"name":"violations_exact","weight":0.7,"type":"pytest"},{"name":"reimbursable_total","weight":0.3,"type":"pytest"}]},{"id":"filesystem-reorg","title":"Reorganize the inbox into sorted/<year>/<category>/ folders","difficulty":2,"tags":["filesystem","tool-use","shell","classification"],"prompt":"Read TOOLS.md. The folder `inbox/` holds 16 unsorted files, and `manifest.csv` (at the\nrepo root) maps each filename to a year.\n\nReorganize EVERY file in `inbox/` into:\n\n    sorted/<year>/<category>/<filename>\n\nwhere:\n  - <year> is that file's year from manifest.csv, and\n  - <category> is decided by the file extension:\n      documents = .pdf .docx .txt .md\n      images    = .png .jpg .jpeg .gif\n      data      = .csv .json .xlsx\n      code      = .py .js .sh .ts\n\nRules:\n  - MOVE the files (do not copy) — when you finish, `inbox/` must be EMPTY.\n  - Do NOT change any file's contents.\n  - Leave `manifest.csv` at the repo root; do not move or edit it.\n\nYou have a shell with `python3`, `mkdir`, and `mv`.","checks":[{"name":"all_files_placed","weight":0.7,"type":"pytest"},{"name":"inbox_emptied","weight":0.3,"type":"pytest"}]},{"id":"gmail-inbox-triage","title":"Triage the shared inbox and flag same-day-urgent messages","difficulty":2,"tags":["email","summarization","tool-use","classification"],"prompt":"You are triaging a shared work inbox. Read TOOLS.md, then use\n`python tools/mailctl.py list` and `python tools/mailctl.py read <id>` to review\nEVERY message.\n\nProduce two files under out/ (create the directory):\n\n1. out/summary.md — a short markdown briefing that, for each notable thread, states\n   the sender and the single action it needs (or \"no action\"). Cover the whole inbox.\n\n2. out/urgent.json — a JSON array of the message ids (as strings) that need a\n   SAME-DAY response. A message is same-day-urgent if and only if it involves ONE of:\n     - a production outage or active incident, OR\n     - a failed or declined payment / billing problem, OR\n     - a hard deadline falling within the next 24 hours.\n   Routine FYIs, newsletters, scheduling requests, and anything due \"next week\" or\n   \"this month\" are NOT urgent.\n\nExample shape of out/urgent.json:  [\"m-000\", \"m-999\"]","checks":[{"name":"urgent_set_exact","weight":0.6,"type":"pytest"},{"name":"summary_covers_urgent","weight":0.2,"type":"pytest"},{"name":"summary_exists","weight":0.2,"type":"file_assert"}]},{"id":"outlook-schedule-meeting","title":"Find the earliest slot all four attendees are free and book it","difficulty":3,"tags":["calendar","scheduling","tool-use","constraints"],"prompt":"Read TOOLS.md. Schedule a 60-minute meeting titled \"Project Sync\" on Tuesday\n2026-07-14 for all FOUR of these attendees:\n    you@acme.io, dana@acme.io, sam@acme.io, priya@acme.io\n\nBook it at the EARLIEST start time between 09:00 and 17:00 at which every one of the\nfour is free for the full hour. Use `python tools/calctl.py freebusy --user <email>\n--date 2026-07-14` to check each person's availability, then\n`python tools/calctl.py create-event ...` to book the single meeting with all four\nattendees. Do not double-book anyone.","checks":[{"name":"meeting_booked","weight":0.4,"type":"pytest"},{"name":"earliest_free_slot","weight":0.6,"type":"pytest"}]},{"id":"quarterly-report-merge","title":"Assemble the Q3 report by merging sales, KPI, and notes sources","difficulty":2,"tags":["report","data-merge","multi-source","tool-use"],"prompt":"Read TOOLS.md. Assemble a single report at out/Q3_report.md (create the out/\ndirectory) by filling template.md with data drawn from three sources:\n\n  - data/sales.csv (columns region,amount)\n  - data/kpis.json\n  - notes.md\n\nFill the template so the final report contains:\n\n  1. Total revenue — the SUM of every amount in data/sales.csv.\n  2. Top region — the region whose row has the single LARGEST amount.\n  3. The three KPI values from data/kpis.json (nps, churn_pct, active_users).\n  4. The qualitative bullet points carried over from notes.md.\n\nKeep the template's section headers exactly as they are\n(# Q3 Report, ## Revenue, ## KPIs, ## Regional, ## Notes).","checks":[{"name":"totals","weight":0.4,"type":"pytest"},{"name":"top_region","weight":0.2,"type":"pytest"},{"name":"kpis_present","weight":0.2,"type":"pytest"},{"name":"sections_present","weight":0.2,"type":"pytest"}]},{"id":"standup-digest","title":"Summarize the standup channel into a per-person digest","difficulty":2,"tags":["chat","summarization","tool-use","digest"],"prompt":"You are writing the daily standup digest for the team. Read TOOLS.md, then read the\nstandup channel with:\n\n    python tools/chatctl.py history --channel standup\n\nFive people post updates: alice, bob, carol, dave, and erin.\n\nWrite out/digest.md (create the out/ directory) as a markdown briefing containing:\n\n1. A short update for EACH of the five people — either a \"## <name>\" heading or a\n   bullet that mentions the person by name.\n2. A \"## Blockers\" section listing every blocker someone raised, with enough detail to\n   tell the blockers apart (what each person is stuck on).\n3. A \"## Open questions\" section listing every open question that was asked (the\n   messages ending in \"?\"), with enough detail to tell the questions apart.\n\nCover the substance of the standup — the exact wording and layout are up to you.","checks":[{"name":"all_people_present","weight":0.3,"type":"pytest"},{"name":"blockers_captured","weight":0.4,"type":"pytest"},{"name":"questions_captured","weight":0.3,"type":"pytest"}]},{"id":"support-ticket-routing","title":"Classify and route every support ticket to a team and severity","difficulty":2,"tags":["tickets","classification","tool-use","routing"],"prompt":"You are triaging a support-ticket queue. Read TOOLS.md, then use\n`python tools/ticketctl.py list` and `python tools/ticketctl.py get <id>` to review\nEVERY ticket.\n\nFor each ticket, decide two things:\n\n1. TEAM — routed purely by the ticket's `product` field:\n     billing -> Payments\n     auth    -> Identity\n     api     -> Platform\n     mobile  -> Mobile\n     other   -> Triage\n\n2. SEVERITY — derived from the ticket `body`, case-insensitive, FIRST MATCH WINS\n   (check the rules top to bottom and stop at the first that matches):\n     - sev1 if the body mentions any of: down, outage, data loss, security, breach\n     - sev2 if the body mentions any of: error, failing, blocked, cannot\n     - otherwise sev3\n\nThen do BOTH of the following for every ticket:\n\n- Record the decision with\n  `python tools/ticketctl.py assign <id> --team <Team> --severity <sevN>`.\n- Write out/assignments.json (create the out/ directory) — a JSON array with one\n  object per ticket: {\"id\": ..., \"team\": ..., \"severity\": ...}, covering all tickets.\n\nExample shape of out/assignments.json:\n  [{\"id\": \"t-00\", \"team\": \"Platform\", \"severity\": \"sev2\"}]","checks":[{"name":"teams","weight":0.5,"type":"pytest"},{"name":"severities","weight":0.5,"type":"pytest"}]}];
 
+// Per-cell telemetry (avg per attempt): s=active seconds, ti/to=tokens in/out,
+// calls=model calls (turns), ca=cost per attempt. From the same runs as the scores.
+const TELEM={"openclaw|Sonnet 5|1":{"s":39.9,"ti":234892,"to":2712,"calls":8.0,"ca":0.4969},"openclaw|GPT-5.6 sol|1":{"s":26.7,"ti":82584,"to":894,"calls":5.7,"ca":0.1375},"openclaw|GPT-5.6 terra|1":{"s":17.9,"ti":73865,"to":1029,"calls":5.0,"ca":0.0755},"openclaw|Gemini 3.5 Flash|1":{"s":44.2,"ti":253586,"to":4178,"calls":12.9,"ca":0.1918},"openclaw|Gemma 4 31B|1":{"s":38.9,"ti":16598,"to":473,"calls":3.2,"ca":0},"openclaw|Nemotron 3 Ultra|1":{"s":33.7,"ti":126101,"to":1913,"calls":5.3,"ca":0.0803},"zeptoclaw|Sonnet 5|1":{"s":18.3,"ti":38788,"to":1639,"calls":4.4,"ca":0.094},"zeptoclaw|GPT-5.6 sol|1":{"s":11.6,"ti":19962,"to":581,"calls":4.6,"ca":0.0559},"zeptoclaw|GPT-5.6 terra|1":{"s":6.3,"ti":13985,"to":430,"calls":3.5,"ca":0.0225},"zeptoclaw|Gemini 3.5 Flash|1":{"s":29.3,"ti":92918,"to":4473,"calls":12.1,"ca":0.1295},"zeptoclaw|Gemma 4 31B|1":{"s":71.9,"ti":33611,"to":713,"calls":5.5,"ca":0},"zeptoclaw|Nemotron 3 Ultra|1":{"s":67.7,"ti":57778,"to":1897,"calls":7.7,"ca":0.0392},"zeptoclaw|Sonnet 5|5":{"s":18.9,"ti":45574,"to":1632,"calls":5.2,"ca":0.1075},"zeptoclaw|GPT-5.6 sol|5":{"s":9.2,"ti":16021,"to":501,"calls":3.8,"ca":0.0469},"zeptoclaw|GPT-5.6 terra|5":{"s":5.6,"ti":14454,"to":339,"calls":3.7,"ca":0.02},"zeptoclaw|Gemini 3.5 Flash|5":{"s":27.7,"ti":96841,"to":4060,"calls":11.8,"ca":0.1311},"zeptoclaw|Nemotron 3 Ultra|5":{"s":41.6,"ti":51240,"to":2018,"calls":6.8,"ca":0.0356},"zeptoclaw|Gemma 4 31B|5":{"s":61.3,"ti":29501,"to":598,"calls":5.1,"ca":0}};
+
 (function(){
   const $=s=>document.querySelector(s);
   const AName={openclaw:"OpenClaw",zeptoclaw:"ZeptoClaw"};
@@ -427,13 +433,15 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
   // Publish only models that have BOTH a 1-trial and a 5-trial run — one model set everywhere.
   const KEEP=new Set(Object.keys(DATA.fiveTrial));
 
-  // Build a uniform cell list for the current trials view.
+  // Build a uniform cell list for the current trials view (telemetry merged by key).
   function cellsFor(trials){
-    if(trials==="1") return DATA.cells.filter(c=>KEEP.has(c.model_label));
+    if(trials==="1") return DATA.cells.filter(c=>KEEP.has(c.model_label))
+      .map(c=>Object.assign(c, TELEM[`${c.agent}|${c.model_label}|1`]||{}));
     return Object.entries(DATA.fiveTrial).map(([label,d])=>({
       agent:"zeptoclaw",model_label:label,provider:d.provider,basis:d.basis||"per_token",
       pass_at_1:d.pass_at_1,pass_hat_5:d.pass_hat_5,mean_correctness:d.mean_correctness,
-      cost_of_success:d.cost_of_success,n:d.n,tasks5:d.tasks }));
+      cost_of_success:d.cost_of_success,n:d.n,tasks5:d.tasks,
+      ...(TELEM[`zeptoclaw|${label}|5`]||{}) }));
   }
   function val(c){ if(!c)return null;
     if(state.metric==="cost_of_success") return c.basis==="flat_rate"?null:c.cost_of_success;
@@ -442,17 +450,19 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
 
   function drawChart(){
     const host=$("#chart"); host.innerHTML="";
-    const isCost=state.metric==="cost_of_success";
+    const isCost=state.metric==="cost_of_success", isSec=state.metric==="s";
     const src=cellsFor(state.trials);
     const models=[...new Set(src.map(c=>c.model_label))];
     let rows=models.map(m=>({m,
       o:src.find(c=>c.model_label===m&&c.agent==="openclaw"),
       z:src.find(c=>c.model_label===m&&c.agent==="zeptoclaw")}))
       .filter(r=>r.o||r.z);
-    let max=isCost?Math.max(0.01,...rows.flatMap(r=>[val(r.o),val(r.z)]).filter(v=>v!=null)):1;
-    if(isCost)max*=1.1;
-    rows.sort((a,b)=>Math.max(val(b.o)??-1,val(b.z)??-1)-Math.max(val(a.o)??-1,val(a.z)??-1));
-    $("#chartAxis").textContent = isCost ? ("$0 — $"+max.toFixed(2)+"  ·  per-token only") : "0 — 100%";
+    let max=(isCost||isSec)?Math.max(0.01,...rows.flatMap(r=>[val(r.o),val(r.z)]).filter(v=>v!=null)):1;
+    if(isCost||isSec)max*=1.1;
+    const dir=isSec?-1:1;  // speed: fastest first
+    rows.sort((a,b)=>dir*(Math.max(val(b.o)??-1,val(b.z)??-1)-Math.max(val(a.o)??-1,val(a.z)??-1)));
+    $("#chartAxis").textContent = isCost ? ("$0 — $"+max.toFixed(2)+"  ·  per-token only")
+      : isSec ? ("0 — "+max.toFixed(0)+"s  ·  avg active seconds per attempt, lower is better") : "0 — 100%";
     const showBoth=state.trials==="1";
     rows.forEach(r=>{
       const prov=(r.o||r.z).provider;
@@ -462,7 +472,7 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
         const v=val(c);
         if(v==null){ const txt=c?(isCost?"~ flat-rate (not metered)":"—"):"—";
           return `<div class="brow">${wh}<div class="track"><div class="fill empty">${txt}</div></div></div>`; }
-        const w=Math.max(3,(v/max)*100), lab=isCost?("$"+v.toFixed(3)):v.toFixed(2);
+        const w=Math.max(3,(v/max)*100), lab=isCost?("$"+v.toFixed(3)):isSec?(v.toFixed(1)+"s"):v.toFixed(2);
         return `<div class="brow">${wh}<div class="track"><div class="fill ${cls}" style="width:${w}%">${lab}</div></div></div>`;
       };
       let bars="";
@@ -493,7 +503,8 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
         <td class="num ${scoreClass(c.pass_at_1)}">${c.pass_at_1.toFixed(2)}</td>
         <td class="num">${p5}</td>
         <td class="num">${c.mean_correctness.toFixed(2)}</td>
-        <td class="num">${fmtCost(c)}</td>`;
+        <td class="num">${fmtCost(c)}</td>
+        <td class="num">${c.s!=null?c.s.toFixed(1):'—'}</td>`;
       const ex=document.createElement("tr"); ex.className="expr"; ex.style.display="none";
       let chips;
       if(state.trials==="5"&&c.tasks5){
@@ -506,7 +517,11 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
       const head = state.trials==="5"
         ? `${c.tasks5.filter(t=>t.passes===t.n).length}/10 tasks pass all 5 · ${AName[c.agent]} × ${c.model_label} (${c.n} attempts)`
         : `${c.passes}/${c.n} tasks passed · ${AName[c.agent]} × ${c.model_label}`;
-      ex.innerHTML=`<td colspan="6"><div class="expin"><div class="eh">${head}</div><div class="tgrid">${chips}</div></div></td>`;
+      const fmtK=x=>x>=1000?(x/1000).toFixed(x>=10000?0:1)+"k":String(x);
+      const tele = c.s!=null
+        ? `<div class="eh" style="margin-top:2px;color:var(--muted);font-weight:400">per attempt: <b style="color:var(--text)">${c.s.toFixed(1)}s</b> active · <b style="color:var(--text)">${fmtK(c.ti)}</b> tokens in / <b style="color:var(--text)">${fmtK(c.to)}</b> out · <b style="color:var(--text)">${c.calls}</b> model calls · ${c.ca?'<b style="color:var(--text)">$'+c.ca.toFixed(3)+'</b>':'<span class="mono">~ flat</span>'}</div>`
+        : "";
+      ex.innerHTML=`<td colspan="7"><div class="expin"><div class="eh">${head}</div>${tele}<div class="tgrid">${chips}</div></div></td>`;
       const tog=()=>{ex.style.display=ex.style.display==="none"?"table-row":"none";};
       tr.addEventListener("click",tog);
       tr.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tog();}});
@@ -617,7 +632,8 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
         : "<b>pass@1</b> = passed tasks ÷ 10 tasks, one attempt each. Coarse: a single lucky or unlucky run moves it by 0.1 — the 5-trial view answers the same question with 5× the evidence.",
       pass_hat_5: "<b>pass^5</b> = tasks passed <b>all five times</b> ÷ 10 tasks. Reliability, not ability — pass a task 4 times out of 5 and it still counts 0 here. Sonnet: 8 of 10 tasks went 5-for-5 → 0.80.",
       mean_correctness: "<b>correctness</b> is not a pass rate — it’s the average <b>score</b>. Every attempt earns 0–1 from the weighted hidden checks, and near-misses count: doing 70% of the job adds 0.7 here but 0 to pass@1.",
-      cost_of_success: "<b>cost / success</b> = everything spent on that agent×model — <b>failed attempts included</b> — divided by the number of passes. Per-token metered at the gateway; flat-rate hosting (Gemma) is excluded."
+      cost_of_success: "<b>cost / success</b> = everything spent on that agent×model — <b>failed attempts included</b> — divided by the number of passes. Per-token metered at the gateway; flat-rate hosting (Gemma) is excluded.",
+      s: "<b>speed</b> = average <b>active seconds per attempt</b> — time the agent actually worked (container queue/setup excluded), fastest first. Expand any table row for the rest of the telemetry: tokens in/out, model calls, cost per attempt."
     };
     $("#metricNote").innerHTML=M[state.metric]||"";
   }
