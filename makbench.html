@@ -110,27 +110,19 @@
   .hpart{color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent)}
   .hbad{color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}
   @media(max-width:760px){.taskgrid{grid-template-columns:1fr}}
-  /* 3D attempt cube: x=models, y=tasks, z=trials. 300 voxels, CSS preserve-3d. */
-  #c3dviewport{height:480px;perspective:1200px;cursor:grab;user-select:none;touch-action:none;position:relative;overflow:hidden;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
-  #c3dviewport:active{cursor:grabbing}
-  #c3dscene{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d}
-  .vox{position:absolute;transform-style:preserve-3d}
-  .vox .f{position:absolute;width:16px;height:16px;left:-8px;top:-8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.22);transition:background .25s,opacity .25s}
-  .vox .fz{transform:translateZ(8px)} .vox .fzb{transform:rotateY(180deg) translateZ(8px)}
-  .vox .fx{transform:rotateY(90deg) translateZ(8px)} .vox .fxb{transform:rotateY(-90deg) translateZ(8px)}
-  .vox .fy{transform:rotateX(90deg) translateZ(8px)} .vox .fyb{transform:rotateX(-90deg) translateZ(8px)}
-  .vox.on .f{background:var(--good)} .vox.off .f{background:var(--bad)}
-  .vox.on .fy,.vox.off .fy{filter:brightness(1.2)} .vox.on .fx,.vox.off .fx,.vox.on .fxb,.vox.off .fxb{filter:brightness(.78)}
-  .vox.ghost .f{background:transparent;box-shadow:inset 0 0 0 1px var(--border);opacity:.28}
-  .c3dbar{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;margin:12px 0 10px}
-  .c3dbar label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-family:ui-monospace,monospace}
-  .c3dbar input[type=range]{width:150px;accent-color:var(--accent)}
-  .c3dhint{margin-left:auto;font-size:12px;color:var(--faint);font-family:ui-monospace,monospace}
-  #c3dscores{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;margin-top:12px}
-  #c3dscores .sc{text-align:center;min-width:96px}
-  #c3dscores .sc .n{font-size:11.5px;font-weight:600;color:var(--text)}
-  #c3dscores .sc .v{font-family:ui-monospace,monospace;font-size:15px;font-weight:700;color:var(--accent)}
-  @media(max-width:760px){#c3dviewport{height:400px}}
+  /* Trial dot-matrix: rows=tasks, cols=models, each cell = that pairing's 5 trials */
+  #dotmat td,#dotmat th{padding:7px 10px}
+  #dotmat .tn{font-family:ui-monospace,monospace;font-size:12px;white-space:nowrap;color:var(--text)}
+  #dotmat .dots{display:inline-flex;gap:3px;vertical-align:middle}
+  #dotmat .dot{width:10px;height:10px;border-radius:3px;transition:opacity .25s,background .25s}
+  #dotmat .dot.on{background:var(--good)} #dotmat .dot.off{background:var(--bad)}
+  #dotmat .cv{display:inline-block;margin-left:8px;font-family:ui-monospace,monospace;font-size:11px;color:var(--muted);min-width:26px}
+  #dotmat td.cell{white-space:nowrap}
+  #dotmat.p5 td.cell.broken .dot.on{opacity:.18}
+  #dotmat.p5 td.cell.broken .cv{color:var(--bad);font-weight:700}
+  #dotmat.p5 td.cell.intact .cv{color:var(--good);font-weight:700}
+  #dotmat tfoot td{border-top:2px solid var(--border);font-family:ui-monospace,monospace;font-weight:700;font-size:14px;color:var(--accent)}
+  #dotmat tfoot td:first-child{font-family:inherit;font-weight:600;font-size:12px;color:var(--muted)}
   .legend{display:flex;gap:16px;align-items:center;margin-left:auto;font-size:12.5px;color:var(--muted)}
   .legend .k{display:inline-flex;align-items:center;gap:6px}
   .legend .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
@@ -308,28 +300,22 @@
     These numbers are reproducible and cost-honest — same sandbox, same fixture, every dollar metered.
     <em>(OpenClaw's 5-trial run is still to land.)</em></p>
 
-  <h3 style="margin:34px 0 6px;font-size:17px">See it: 300 real attempts as one cube</h3>
-  <p class="note" style="margin:0 0 14px;font-size:13px">Every cubelet is one graded attempt from the ZeptoClaw
-    reliability run. <b style="color:var(--text)">Columns → the 6 models</b> ·
-    <b style="color:var(--text)">rows ↓ the 10 tasks</b> ·
-    <b style="color:var(--text)">depth = the 5 trials</b>. Green passed, red failed.
-    <b style="color:var(--text)">Drag to spin</b>, and pull the trial layers apart to see inside.</p>
+  <h3 style="margin:34px 0 6px;font-size:17px">See it: every trial of every task, one row per task</h3>
+  <p class="note" style="margin:0 0 14px;font-size:13px">The full ZeptoClaw reliability run — 300 graded attempts.
+    Each cell shows one task×model pairing's <b style="color:var(--text)">five trials as five dots</b>, green pass,
+    red fail — read it like a CI dashboard. Flip the lens to change the counting rule:</p>
   <div class="controls" style="margin:0 0 4px">
     <div class="cg"><span class="cl">Lens</span>
       <div class="seg" id="fLens" role="group" aria-label="Counting rule">
-        <button data-v="p1" aria-pressed="true">pass@1 · count every cubelet</button>
+        <button data-v="p1" aria-pressed="true">pass@1 · count every dot</button>
         <button data-v="p5" aria-pressed="false">pass^5 · all five or nothing</button>
       </div>
     </div>
   </div>
-  <p class="note" id="cubeNote" style="font-size:12.5px;margin:10px 0 10px"></p>
-  <div class="c3dbar">
-    <label for="c3dexplode">Pull trials apart</label>
-    <input type="range" id="c3dexplode" min="1" max="2.6" step="0.05" value="1.35">
-    <span class="c3dhint">drag cube to rotate · hover a cubelet for model · task · trial</span>
+  <p class="note" id="cubeNote" style="font-size:12.5px;margin:10px 0 12px"></p>
+  <div class="tablewrap">
+    <table id="dotmat"><thead></thead><tbody></tbody><tfoot></tfoot></table>
   </div>
-  <div id="c3dviewport"><div id="c3dscene"></div></div>
-  <div id="c3dscores"></div>
 </section>
 
 <!-- HOW -->
@@ -591,62 +577,35 @@ const TASKS=[{"id":"calendar-deconflict","title":"Resolve a double-booking by mo
     }).join("");
   }
 
-  // ---- 3D attempt cube: 6 models (x) × 10 tasks (y) × 5 trials (z), one voxel per attempt.
+  // ---- Trial dot-matrix: rows=tasks, cols=models, each cell = 5 trial dots + verdict.
   // Per-trial pass ORDER isn't stored (only k-of-5 counts); both metrics are order-blind,
-  // so trials 0..k-1 render as passes — faithful to the math, deterministic to draw.
-  const C3D={yaw:-28,pitch:-18,explode:1.35,lens:"p1",vox:[]};
-  function build3d(){
-    const scene=$("#c3dscene");
-    Object.entries(DATA.fiveTrial).forEach(([label,d],m)=>{
-      d.tasks.forEach((tk,r)=>{
-        for(let t=0;t<tk.n;t++){
-          const v=document.createElement("div");
-          v.className="vox"; v.dataset.m=m; v.dataset.r=r; v.dataset.t=t;
-          v.dataset.pass = t<tk.passes ? "1":"0";
-          v.dataset.full = tk.passes===tk.n ? "1":"0";
-          v.title=`${label} · ${tk.task} · trial ${t+1}: ${t<tk.passes?"pass":"fail"} (task ${tk.passes}/${tk.n})`;
-          v.innerHTML='<div class="f fz"></div><div class="f fzb"></div><div class="f fx"></div><div class="f fxb"></div><div class="f fy"></div><div class="f fyb"></div>';
-          scene.appendChild(v); C3D.vox.push(v);
-        }
-      });
-    });
-    layout3d(); paint3d(); spin3d();
+  // so dots 0..k-1 render as passes — faithful to the math, deterministic to draw.
+  function drawDotmat(mode){
+    const tbl=$("#dotmat"), models=Object.entries(DATA.fiveTrial);
+    tbl.className = mode==="p5" ? "p5" : "";
+    tbl.querySelector("thead").innerHTML =
+      '<tr><th style="text-align:left">Task</th>'+models.map(([l])=>`<th style="text-align:left">${l}</th>`).join("")+"</tr>";
+    tbl.querySelector("tbody").innerHTML = TASKS.map(t=>{
+      const cells=models.map(([l,d])=>{
+        const tk=d.tasks.find(x=>x.task===t.id);
+        const dots=Array.from({length:tk.n},(_,i)=>`<span class="dot ${i<tk.passes?"on":"off"}"></span>`).join("");
+        const intact=tk.passes===tk.n;
+        const cv = mode==="p5" ? (intact?"✓":"✗") : `${tk.passes}/${tk.n}`;
+        return `<td class="cell ${intact?"intact":"broken"}" title="${l} · ${t.id}: ${tk.passes}/${tk.n} trials passed"><span class="dots">${dots}</span><span class="cv">${cv}</span></td>`;
+      }).join("");
+      return `<tr><td class="tn">${t.id}</td>${cells}</tr>`;
+    }).join("");
+    tbl.querySelector("tfoot").innerHTML =
+      `<tr><td>${mode==="p5"?"pass^5 = ✓ rows ÷ 10":"pass@1 = green dots ÷ 50"}</td>`
+      +models.map(([,d])=>`<td>${(mode==="p5"?d.pass_hat_5:d.pass_at_1).toFixed(2)}</td>`).join("")+"</tr>";
+    $("#cubeNote").innerHTML = mode==="p1"
+      ? "<b>pass@1 counts every dot equally:</b> green dots ÷ 50 per model column. A 3/5 cell still contributes 3 greens — partial reliability earns partial score."
+      : "<b>pass^5 judges each cell as a unit:</b> five-for-five gets a ✓, anything less gets ✗ and its greens fade — they no longer count. Model score = ✓ cells ÷ 10. Watch Nemotron keep only 5 of its 10 cells, while sol and Flash keep all 10.";
   }
-  function layout3d(){
-    const P=22;                                   // voxel pitch (16px cube + gap)
-    C3D.vox.forEach(v=>{
-      const x=(v.dataset.m-2.5)*P, y=(v.dataset.r-4.5)*P, z=(2-v.dataset.t)*P*C3D.explode; // trial 1 front
-      v.style.transform=`translate3d(${x}px,${y}px,${z}px)`;
-    });
-  }
-  function paint3d(){
-    C3D.vox.forEach(v=>{
-      const pass=v.dataset.pass==="1", full=v.dataset.full==="1";
-      v.className="vox "+(pass ? (C3D.lens==="p5"&&!full ? "ghost":"on") : "off");
-    });
-    const scores=Object.entries(DATA.fiveTrial).map(([label,d])=>
-      `<div class="sc"><div class="n">${label}</div><div class="v">${(C3D.lens==="p1"?d.pass_at_1:d.pass_hat_5).toFixed(2)}</div></div>`).join("");
-    $("#c3dscores").innerHTML=scores;
-    $("#cubeNote").innerHTML = C3D.lens==="p1"
-      ? "<b>pass@1 counts every cubelet equally:</b> green ÷ 50 per model-column. A task that passes 3 of 5 trials contributes 3 greens — partial reliability still earns partial score."
-      : "<b>pass^5 drills through the depth axis:</b> a task×model column of 5 must be all green — one red hollows out the whole column (greens fade to outlines, no longer counted). Score = intact columns ÷ 10 tasks. Nemotron and Gemma lose columns; sol and Flash lose none.";
-  }
-  function spin3d(){ $("#c3dscene").style.transform=`rotateX(${C3D.pitch}deg) rotateY(${C3D.yaw}deg)`; }
-  (function(){
-    const vp=$("#c3dviewport"); let drag=null;
-    vp.addEventListener("pointerdown",e=>{drag={x:e.clientX,y:e.clientY,yaw:C3D.yaw,pitch:C3D.pitch}; vp.setPointerCapture(e.pointerId);});
-    vp.addEventListener("pointermove",e=>{ if(!drag)return;
-      C3D.yaw=drag.yaw+(e.clientX-drag.x)*0.4;
-      C3D.pitch=Math.max(-75,Math.min(35,drag.pitch-(e.clientY-drag.y)*0.4));
-      spin3d();
-    });
-    vp.addEventListener("pointerup",()=>drag=null); vp.addEventListener("pointercancel",()=>drag=null);
-    $("#c3dexplode").addEventListener("input",e=>{C3D.explode=parseFloat(e.target.value); layout3d();});
-  })();
   document.querySelectorAll("#fLens button").forEach(b=>b.addEventListener("click",()=>{
-    setSeg("fLens","lens",b.dataset.v); C3D.lens=b.dataset.v; paint3d();
+    setSeg("fLens","lens",b.dataset.v); drawDotmat(b.dataset.v);
   }));
-  build3d();
+  drawDotmat("p1");
 
   // One plain-English sentence for the selected metric in the selected view — the same
   // number means subtly different things at 1 vs 5 trials, so say which.
