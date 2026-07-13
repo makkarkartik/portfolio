@@ -395,6 +395,18 @@
       the task” would measure a different skill; peers already pass the current one.</p>
   </div>
 
+  <div class="callout acc" style="margin-top:14px">
+    <p style="margin:0"><b>External corroboration — same signature, different harness.</b>
+      <a href="https://benchlm.ai/models/nemotron-3-ultra" target="_blank" rel="noopener">BenchLM</a>
+      (data verified 2026-07-12) ranks Nemotron <strong>#7 / 134</strong> on instruction following (90.0) but only
+      <strong>#65 / 120</strong> on agentic (46.8) — a ~43-point drop that mirrors our chat-only pass vs live-agent fail.
+      Headline <span class="mono">TAU3-Bench</span> is a respectable 70.9%; the collapse is in the
+      <em>enterprise-domain</em> agentic slices (Tau3-Banking 13.8%, Harvey LAB 3.3%, GDPval-AA 33.2%,
+      EnterpriseOps-Gym 28.5%). Two independently built harnesses, different task sets, same model×capability
+      claim: strong on single-shot instruction following, sharp degradation on multi-step enterprise agent work.
+      That both validates the finding and argues enterprise-mini is measuring something real.</p>
+  </div>
+
   <div class="mdefs" style="margin-top:18px">
     <div class="mdef">
       <div class="mn">What we ruled out</div>
