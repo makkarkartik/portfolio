@@ -638,19 +638,18 @@
     </div>
 
     <div class="research-card fade-up" style="margin-top:20px">
-      <p class="research-title">MAKBench — An Open-Source, Cost-Metered Harness<br>for Benchmarking CLI Agents Across LLMs</p>
-      <p class="research-meta">Independent Project &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; Docker-sandboxed · LiteLLM-gateway metered · split-phase grading &nbsp;·&nbsp; ZeptoClaw vs OpenClaw across 9 LLMs / 5 providers</p>
+      <p class="research-title">MAKBench — Agent evaluation harness<br>CLI scaffolds × LLMs on enterprise-mini</p>
+      <p class="research-meta">Independent Project &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; Docker sandboxes · LiteLLM gateway metering · split-phase grading &nbsp;·&nbsp; ZeptoClaw vs OpenClaw · 7 models / 5 providers</p>
 
       <p class="research-body">
-        Built a benchmark harness that runs <strong>CLAW-style CLI agents</strong> across many LLMs on the same real
-        tool-use tasks — each attempt in an <strong>isolated Docker sandbox</strong>, every model call routed through
-        <strong>one metered gateway</strong>, and the finished workspace graded in a <strong>separate trusted
-        container</strong> the agent can't touch. Identical starting state and observed cost make agent/model pairings
-        genuinely comparable. The head-to-head: ZeptoClaw runs <strong>on par with OpenClaw</strong> on most models and
-        <strong>ahead on Nemotron</strong> — at a fraction of the reasoning-model cost.
+        Open-source harness for running CLI agents against LLMs on a fixed pack of tool-use tasks. Each attempt
+        starts from the same Docker fixture, routes LLM calls through one gateway (tokens and spend logged there),
+        and is graded in a separate trusted container. Published board: ZeptoClaw vs OpenClaw, 1-trial and 5-trial
+        cuts — mean pass@1 on shared models is <strong>0.88 vs 0.78</strong>; scaffold×model interactions (including
+        Nemotron) are in the results page.
       </p>
 
-      <a class="metrics-link" href="makbench.html" aria-label="Open the MAKBench results dashboard">
+      <a class="metrics-link" href="makbench.html" aria-label="Open the MAKBench results page">
       <div class="metrics">
         <div class="metric">
           <div class="metric-val">0.88</div>
@@ -658,29 +657,29 @@
         </div>
         <div class="metric">
           <div class="metric-val">7 · 5</div>
-          <div class="metric-lbl">LLMs · providers, one cost-metered gateway</div>
+          <div class="metric-lbl">Models · providers on one gateway</div>
         </div>
         <div class="metric">
           <div class="metric-val">840</div>
-          <div class="metric-lbl">Sandboxed, cost-metered, split-phase-graded attempts</div>
+          <div class="metric-lbl">Graded attempts on this board</div>
         </div>
       </div>
       </a>
 
       <a class="results-cta" href="makbench.html">
-        <span class="rc-text"><strong>Explore the harness &amp; results</strong> — how agents are sandboxed &amp; spun up, what a task looks like to the agent, how output is verified, and an interactive ZeptoClaw vs OpenClaw explorer.</span>
-        <span class="rc-go">Open dashboard <span class="arrow">→</span></span>
+        <span class="rc-text"><strong>Results &amp; method</strong> — charts, task prompts, grading, and the Nemotron follow-up.</span>
+        <span class="rc-go">Open page <span class="arrow">→</span></span>
       </a>
 
       <ul class="research-bullets">
-        <li><strong>Fair by construction.</strong> Every attempt starts from <strong>byte-identical state</strong> — a fresh workspace volume, the same fixture, the same git baseline — on <strong>digest-pinned</strong> agent images under fixed CPU/memory and wall-clock/step budgets, with <strong>gateway-only egress</strong> (no open internet to fetch hidden answers).</li>
-        <li><strong>Cost truth, not self-report.</strong> All LLM traffic routes through a LiteLLM gateway that mints a <strong>per-attempt, budget-capped virtual key</strong> — the agent can't outspend it, real provider keys never enter the sandbox, and spend is metered at the highest <em>gateway</em> provenance (per-token vs flat-rate bases never blended).</li>
-        <li><strong>Split-phase verification.</strong> Untrusted code does the work; a <strong>separate MAKBench-owned verifier</strong> grades the frozen workspace read-only. Every task is anti-triviality-checked so a pristine fixture <em>fails</em> — a no-op agent scores zero.</li>
-        <li><strong>Honest, reproducible read.</strong> Both agents ran every task <strong>5×</strong> — 840 graded, cost-metered attempts across 7 models. Headline: the scaffold effect cuts both ways — Nemotron scores <strong>pass^5 0.50 on ZeptoClaw vs 0.00 on OpenClaw</strong>, while open-weights <strong>gpt-oss-120B is OpenClaw's only perfect cell (1.00/1.00, ~$0.04/attempt)</strong> and breaks one task on ZeptoClaw. Every number is <strong>reproducible and cost-honest</strong>.</li>
+        <li><strong>Controlled attempts.</strong> Fresh workspace, same fixture and git baseline, digest-pinned agent images, fixed CPU/memory and wall-clock/step budgets, gateway-only egress.</li>
+        <li><strong>Gateway metering.</strong> Per-attempt budget-capped virtual keys; provider secrets stay on the host; spend and tokens come from the call log (per-token vs flat-rate not mixed in rankings).</li>
+        <li><strong>Split-phase grading.</strong> Agent sandbox and verifier container are separate; workspace is mounted read-only for checks. Tasks fail on a pristine fixture (no-op scores zero).</li>
+        <li><strong>What the 5-trial cut shows.</strong> Scaffold matters both ways: Nemotron pass^5 is <strong>0.50 on ZeptoClaw vs 0.00 on OpenClaw</strong>; gpt-oss-120B is <strong>1.00/1.00 on OpenClaw</strong> (~$0.04/attempt) and fails one task on ZeptoClaw. Details and ablations on the results page.</li>
       </ul>
 
       <div class="card-links">
-        <a href="makbench.html" class="card-link primary">View results dashboard ↗</a>
+        <a href="makbench.html" class="card-link primary">View results ↗</a>
         <a href="https://github.com/makkarkartik/makbench" class="card-link">GitHub ↗</a>
       </div>
     </div>

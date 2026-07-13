@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MAKBench — Agent Evaluation Harness · Kartik Makkar</title>
-<meta name="description" content="An open-source, cost-metered harness that benchmarks CLAW-style CLI agents across LLMs in sealed Docker sandboxes — with an interactive ZeptoClaw vs OpenClaw results explorer across 1-trial and 5-trial runs.">
+<meta name="description" content="MAKBench results: ZeptoClaw vs OpenClaw on enterprise-mini (10 tasks), 1-trial and 5-trial runs, with gateway-metered cost. Includes a Nemotron 3 Ultra failure analysis.">
 <link rel="canonical" href="https://kartikmakkar.com/makbench.html">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <style>
@@ -177,45 +177,45 @@
 <div class="wrap">
 
 <header class="hero">
-  <p class="eyebrow">Applied ML Systems · Project Dashboard</p>
-  <h1>Benchmarking AI agents — <em>fairly, and to the dollar</em></h1>
+  <p class="eyebrow">MAKBench · enterprise-mini campaign</p>
+  <h1>ZeptoClaw vs OpenClaw on <em>enterprise-mini</em></h1>
   <p class="lede">
-    <strong>MAKBench</strong> runs CLAW-style CLI agents across many LLMs on the same real tasks, in identical
-    Docker sandboxes, with every model call metered through one gateway. Same starting state, same limits,
-    <strong>observed</strong> cost — so a score means something. Below: how the harness works end-to-end, and an
-    interactive <strong>ZeptoClaw vs OpenClaw</strong> results explorer across <strong>1-trial and 5-trial</strong> runs.
+    Published numbers from a fixed pack of <strong>10 enterprise tool-use tasks</strong>, run under two CLI agent
+    scaffolds against the same seven models. Each attempt starts from the same Docker fixture, hits the same
+    wall-clock and step budgets, and routes every LLM call through one gateway so tokens and dollars are logged —
+    not self-reported. Charts below cover the <strong>1-trial</strong> and <strong>5-trial</strong> cuts; later
+    sections cover the harness, tasks, scoring, and a Nemotron 3 Ultra follow-up.
   </p>
   <div class="pills">
-    <span class="pill">CLAW-style CLI agents</span>
-    <span class="pill">Docker-sandboxed</span>
-    <span class="pill">Gateway-metered cost truth</span>
+    <span class="pill">CLI agent scaffolds</span>
+    <span class="pill">Docker sandboxes</span>
+    <span class="pill">Gateway-metered cost</span>
     <span class="pill">Split-phase grading</span>
     <span class="pill">enterprise-mini · 10 tasks</span>
   </div>
   <div class="stats">
-    <div class="stat"><div class="v">2</div><div class="l">Agents compared head-to-head</div></div>
-    <div class="stat"><div class="v">7</div><div class="l">LLMs under test across 5 providers</div></div>
-    <div class="stat"><div class="v">10</div><div class="l">Enterprise tool-use tasks</div></div>
-    <div class="stat"><div class="v">840</div><div class="l">Graded, cost-metered attempts</div></div>
+    <div class="stat"><div class="v">2</div><div class="l">Agent scaffolds</div></div>
+    <div class="stat"><div class="v">7</div><div class="l">Models (5 providers)</div></div>
+    <div class="stat"><div class="v">10</div><div class="l">Tasks in the pack</div></div>
+    <div class="stat"><div class="v">840</div><div class="l">Graded attempts in this board</div></div>
   </div>
 </header>
 
 <!-- RESULTS -->
 <section id="results">
-  <p class="kicker">1 · Results explorer</p>
-  <h2>ZeptoClaw vs OpenClaw, model by model</h2>
-  <p class="sub">One model set, two views: a <strong>head-to-head</strong> at 1 trial per task, and a
-    <strong>reliability deep-dive</strong> where both agents run every task 5×. Seven models — only those with
-    <strong>both</strong> runs are published. Pick a metric, and <strong>click any row in the table for the
-    per-task breakdown</strong>.</p>
+  <p class="kicker">1 · Results</p>
+  <h2>Model × scaffold scores</h2>
+  <p class="sub">Two published cuts over the same seven models: <strong>1 trial</strong> per task (coarse), and
+    <strong>5 trials</strong> per task (stability). Only models with both cuts appear. Choose a metric; click a
+    table row for the per-task breakdown.</p>
 
   <div class="callout" id="viewNote"></div>
 
   <div class="controls" style="margin-top:22px">
     <div class="cg"><span class="cl">View</span>
       <div class="seg" id="fView" role="group" aria-label="View">
-        <button data-v="1" aria-pressed="true">Head-to-head · 1 trial</button>
-        <button data-v="5" aria-pressed="false">Reliability · 5 trials</button>
+        <button data-v="1" aria-pressed="true">1 trial</button>
+        <button data-v="5" aria-pressed="false">5 trials</button>
       </div>
     </div>
     <div class="cg"><span class="cl">Metric</span>
@@ -256,13 +256,12 @@
       <tbody id="rows"></tbody>
     </table>
   </div>
-  <p class="note" style="margin-top:14px;font-size:12.5px">Cost, tokens and calls are metered at the gateway — never self-reported. <span class="mono">tokens in/out</span>, <span class="mono">calls</span> and <span class="mono">time</span> are per-attempt averages; <span class="mono">tokens in</span> counts every billed input token, so agents that re-read the whole transcript each turn show it. Gemma runs on a flat-rate plan and shows <span class="mono">~</span> (excluded from cost ranking). <span class="mono">pass^5</span> only applies to the 5-trial view.</p>
+  <p class="note" style="margin-top:14px;font-size:12.5px">Cost, tokens, and calls come from the gateway log. <span class="mono">tokens in/out</span>, <span class="mono">calls</span>, and <span class="mono">time</span> are per-attempt averages; <span class="mono">tokens in</span> includes every billed input token (agents that re-read the transcript each turn show higher values). Gemma is on a flat-rate plan and shows <span class="mono">~</span> (excluded from cost ranking). <span class="mono">pass^5</span> only exists in the 5-trial view.</p>
 
-  <h3 style="margin:36px 0 6px;font-size:17px">Which tasks are hard — task × model</h3>
-  <p class="note" style="margin:0 0 14px;font-size:13px">Every task against every published run in the current view,
-    <strong>hardest task first</strong>. Head-to-head cells: <span class="mono">✓</span> pass, a number = partial credit,
-    <span class="mono">✗</span> zero. Reliability cells: trials passed out of 5. The <span class="mono">avg</span> column
-    is the task's mean pass rate across the row.</p>
+  <h3 style="margin:36px 0 6px;font-size:17px">Task × model matrix</h3>
+  <p class="note" style="margin:0 0 14px;font-size:13px">All tasks in the current view, sorted by mean pass rate
+    ascending. 1-trial cells: <span class="mono">✓</span> pass, a number = partial credit, <span class="mono">✗</span> zero.
+    5-trial cells: trials passed out of 5. <span class="mono">avg</span> is the row mean.</p>
   <div class="tablewrap">
     <table id="heat"><thead></thead><tbody></tbody></table>
   </div>
@@ -295,26 +294,21 @@
 
 <!-- READ -->
 <section id="read">
-  <p class="kicker">The read</p>
-  <h2>Why trials matter — the numbers move</h2>
-  <p class="note">At <strong>1 trial</strong> the two agents look level on most models. Run every task <strong>5 times per
-    agent</strong> — 700 graded attempts — and three findings fall out. <strong>One: trials correct luck.</strong> Sonnet 5
-    firms up 0.80 → 0.92 pass@1 on ZeptoClaw (its single-run miss was variance), while Nemotron's lucky 0.80 corrects
-    to 0.64. <strong>Two: the agent scaffold is worth as much as the model — and it cuts both ways.</strong> The same
-    Nemotron 3 Ultra scores <strong>0.64 / pass^5 0.50 on ZeptoClaw but 0.32 / pass^5 0.00 on OpenClaw</strong>. Then
-    the mirror image: on open-weights <strong>gpt-oss-120B, OpenClaw runs a perfect 1.00 / 1.00</strong> — its only
-    flawless cell, at ~$0.04 an attempt — while ZeptoClaw breaks systematically on one task (support-ticket-routing,
-    0-for-6 lifetime). Pairings, not agents, win. Even "perfect" is pairing-relative: sol and Flash are 1.00 / 1.00 on
-    ZeptoClaw but leak a task each on OpenClaw. <strong>Three: hosting shapes results.</strong> Gemma's one hard
-    failure (expense-audit, 0/5 on both agents) is the 32K-context ceiling of its flat-rate host, not the weights.
-    <strong>pass@1</strong> asks "can it?", <strong>pass^5</strong> asks "can I rely on it?" — and the answer depends
-    on the whole stack: model, scaffold, and serving. Every number here is reproducible and cost-honest — same
-    sandbox, same fixture, every dollar metered.</p>
+  <p class="kicker">Notes on the board</p>
+  <h2>What changes between 1 trial and 5</h2>
+  <p class="note">At <strong>1 trial</strong>, the two scaffolds look close on most models. The <strong>5-trial</strong>
+    cut (700 graded attempts) shifts a few cells and separates three effects. <strong>Variance:</strong> Sonnet 5 on
+    ZeptoClaw moves 0.80 → 0.92 pass@1; Nemotron’s 0.80 drops to 0.64. <strong>Scaffold × model:</strong> Nemotron 3 Ultra
+    is <strong>0.64 / pass^5 0.50 on ZeptoClaw</strong> and <strong>0.32 / pass^5 0.00 on OpenClaw</strong>; gpt-oss-120B
+    is the reverse pattern — <strong>1.00 / 1.00 on OpenClaw</strong> (~$0.04/attempt) while ZeptoClaw fails
+    support-ticket-routing repeatedly. sol and Flash are 1.00 / 1.00 on ZeptoClaw but each miss a task on OpenClaw.
+    <strong>Serving:</strong> Gemma’s expense-audit 0/5 on both agents tracks the flat-rate host’s 32K context limit,
+    not necessarily the weights. <strong>pass@1</strong> is share of attempts that fully pass;
+    <strong>pass^5</strong> is share of tasks that pass all five trials.</p>
 
-  <h3 style="margin:34px 0 6px;font-size:17px">See it: every trial of every task, one row per task</h3>
-  <p class="note" style="margin:0 0 14px;font-size:13px">The full reliability runs — 700 graded attempts, 350 per agent.
-    Each cell shows one task×model pairing's <b style="color:var(--text)">five trials as five dots</b>, green pass,
-    red fail — read it like a CI dashboard. Pick the agent, flip the lens:</p>
+  <h3 style="margin:34px 0 6px;font-size:17px">5-trial matrix (per agent)</h3>
+  <p class="note" style="margin:0 0 14px;font-size:13px">350 attempts per agent. Each cell is five dots for one
+    task×model pairing (green = pass, red = fail). Switch agent or counting rule:</p>
   <div class="controls" style="margin:0 0 4px">
     <div class="cg"><span class="cl">Agent</span>
       <div class="seg" id="fDMA" role="group" aria-label="Agent">
@@ -386,13 +380,12 @@
   </div>
 
   <div class="callout" style="margin-top:18px">
-    <p style="margin:0"><b>Verdict — real gap, not a scoring bug.</b> Nemotron can obey the exact artifact contract
+    <p style="margin:0"><b>Verdict.</b> Real gap on this bar, not a broken harness. Nemotron can obey the exact artifact contract
       in chat. Under OpenClaw it often never finishes the graded writes (this smoke: read/exec only, reasoning-only
       turn → incomplete response, both checks <span class="mono">FileNotFoundError</span> on
       <span class="mono">violations.csv</span> / <span class="mono">report.md</span>, ~$0.055 spent). Campaign history
-      shows the sibling failure mode: freestyle filenames or CSV headers when files <em>are</em> written. Either way
-      the deliverable isn’t there — and the control clears the same bar cold. Softening grading to “roughly understood
-      the task” would measure a different skill; peers already pass the current one.</p>
+      also shows freestyle filenames or CSV headers when files <em>are</em> written. The Fireworks control clears the
+      same bar. Softening checks to “roughly understood the task” would measure a different skill.</p>
   </div>
 
   <div class="callout acc" style="margin-top:14px">
@@ -403,8 +396,7 @@
       Headline <span class="mono">TAU3-Bench</span> is a respectable 70.9%; the collapse is in the
       <em>enterprise-domain</em> agentic slices (Tau3-Banking 13.8%, Harvey LAB 3.3%, GDPval-AA 33.2%,
       EnterpriseOps-Gym 28.5%). Two independently built harnesses, different task sets, same model×capability
-      claim: strong on single-shot instruction following, sharp degradation on multi-step enterprise agent work.
-      That both validates the finding and argues enterprise-mini is measuring something real.</p>
+      claim: strong on single-shot instruction following, sharp degradation on multi-step enterprise agent work.</p>
   </div>
 
   <div class="mdefs" style="margin-top:18px">
@@ -426,13 +418,12 @@
 
 <!-- HOW -->
 <section id="how">
-  <p class="kicker">2 · The harness</p>
-  <h2>One agent, one task, one sealed sandbox</h2>
-  <p class="sub">MAKBench benchmarks CLAW-style CLI agents — ZeptoClaw, OpenClaw, Aider, Claude Code and the long
-    tail of similar tools — across different LLMs. Each attempts a real task in an isolated Docker sandbox; every
-    LLM call routes through one metered gateway; the finished workspace is graded in a <strong>separate, trusted
-    container</strong>. Identical starting state and limits make agent/model pairings genuinely comparable — and
-    every dollar of cost is <strong>observed, not self-reported</strong>.</p>
+  <p class="kicker">2 · Harness</p>
+  <h2>Attempt lifecycle</h2>
+  <p class="sub">MAKBench runs CLI agents (ZeptoClaw, OpenClaw, Aider, Claude Code, and similar) against LLMs.
+    Each attempt gets an isolated Docker workspace; LLM traffic goes through one gateway; grading runs in a
+    <strong>separate trusted container</strong>. Fixtures, budgets, and images are fixed per campaign so agent×model
+    cells are comparable. Cost is taken from the gateway call log.</p>
   <div class="steps">
     <div class="stepc"><div class="si">01</div><div class="st">Prepared image</div><div class="sd">The agent's digest-pinned image, install steps baked in and snapshotted — attempts start in ~1s.</div></div>
     <div class="stepc"><div class="si">02</div><div class="st">Fresh workspace</div><div class="sd">A new volume, staged with the task fixture, the prompt written to a file, and a git baseline commit.</div></div>
@@ -440,9 +431,8 @@
     <div class="stepc"><div class="si">04</div><div class="st">Gateway-only net</div><div class="sd">Joined to an internal bridge whose only peer is the gateway — no route to the open internet.</div></div>
     <div class="stepc"><div class="si">05</div><div class="st">Supervision</div><div class="sd">A 1&nbsp;Hz loop enforces wall-clock, stall and step budgets, then dumps the full log.</div></div>
   </div>
-  <p class="sub" style="margin-top:26px"><strong>Adding an agent is a single YAML file</strong> — no code. The
-    universal <span class="mono">cli-generic</span> adapter fills in the model and prompt per attempt and points the
-    agent's SDK env vars at the gateway.</p>
+  <p class="sub" style="margin-top:26px">New agents are a YAML file — the <span class="mono">cli-generic</span>
+    adapter substitutes model and prompt and points the agent’s OpenAI-compatible env at the gateway.</p>
   <div class="code">
     <div class="cbar"><i style="background:#e0655b"></i><i style="background:#e0b24f"></i><i style="background:#63c088"></i><span class="ct">agents.d/zeptoclaw.yaml</span></div>
 <pre><span class="k">id</span>: zeptoclaw
@@ -456,7 +446,9 @@
     exec zeptoclaw agent --mode autonomous -m <span class="s">"$(cat {prompt_file})"</span>
 <span class="k">env_style</span>: openai</pre>
   </div>
-  <div class="callout acc"><p style="margin:0"><b>The gateway is the one source of cost truth.</b> Before each attempt it mints a per-attempt, budget-capped <b style="color:var(--text)">virtual key</b> — an agent can't outspend it. Real provider keys never enter the sandbox (the config references env-var <em>names</em> only), and the key's call log — tokens, latency, computed cost — is ingested at the highest <span class="mono">gateway</span> provenance.</p></div>
+  <div class="callout acc"><p style="margin:0"><b>Gateway metering.</b> Each attempt gets a budget-capped virtual key;
+    provider secrets never enter the sandbox (config holds env-var names only). Tokens, latency, and computed cost
+    are ingested from that key’s call log at <span class="mono">gateway</span> provenance.</p></div>
 </section>
 
 <!-- TASK -->
@@ -475,9 +467,9 @@
 <!-- SCORING -->
 <section id="scoring">
   <p class="kicker">4 · Verification &amp; scoring</p>
-  <h2>Graded by a container the agent can't touch</h2>
-  <p class="sub">Untrusted code does the work; trusted code does the grading. The two never share a process — so a
-    malicious image can, at worst, fail itself.</p>
+  <h2>Split-phase grading</h2>
+  <p class="sub">The agent runs in an untrusted sandbox; checks run in a separate MAKBench-owned container with the
+    finished workspace mounted read-only. They do not share a process.</p>
   <div class="panels">
     <div class="panel agent">
       <div class="plab">Phase 1 · agent</div>
@@ -513,7 +505,7 @@
 </section>
 
 <footer><div>
-  <p style="margin:0 0 6px">MAKBench — an open-source, cost-metered agent evaluation harness · 2026.</p>
+  <p style="margin:0 0 6px">MAKBench · open-source agent evaluation harness · 2026</p>
   <p style="margin:0"><a href="/">← Back to portfolio</a> &nbsp;·&nbsp; <a href="https://github.com/makkarkartik/makbench" target="_blank" rel="noopener">makkarkartik/makbench ↗</a></p>
 </div></footer>
 
@@ -757,10 +749,10 @@ const TELEM={"openclaw|Sonnet 5|1":{"s":39.9,"ti":234892,"to":2712,"calls":8.0,"
     if(!five && state.metric==="pass_hat_5") setSeg("fMetric","metric","pass_at_1");
     const note=$("#viewNote");
     if(five){
-      note.innerHTML='<p style="margin:0"><b>Reliability view — both agents, 10 tasks × 5 trials per model (50 attempts per cell, 700 total).</b> <span style="color:var(--muted)"><span class="mono">pass^5</span> = share of tasks that pass all five times — the "can I rely on it?" number. Same sandbox, same fixtures: any difference between the bars is the agent scaffold.</span></p>';
+      note.innerHTML='<p style="margin:0"><b>5-trial view — both agents, 10 tasks × 5 trials (50 attempts per cell, 700 total).</b> <span style="color:var(--muted)"><span class="mono">pass^5</span> = fraction of tasks that passed all five trials. Same fixtures and budgets; bar gaps are scaffold or model differences.</span></p>';
       note.style.borderLeftColor="var(--zepto)";
     } else {
-      note.innerHTML='<p style="margin:0"><b>Head-to-head — OpenClaw vs ZeptoClaw, one trial per task.</b> <span style="color:var(--muted)">Single-run numbers are coarse (±0.1 swings are normal — see the reliability view). Only the seven models with both a 1-trial and a 5-trial run are shown.</span></p>';
+      note.innerHTML='<p style="margin:0"><b>1-trial view — OpenClaw vs ZeptoClaw, one attempt per task.</b> <span style="color:var(--muted)">Single-run rates move ±0.1 easily; use the 5-trial view for stability. Only models present in both cuts are listed.</span></p>';
       note.style.borderLeftColor="var(--warn)";
     }
   }
