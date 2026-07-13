@@ -181,7 +181,7 @@
 
 <header class="hero">
   <p class="eyebrow">MAKBench · enterprise-mini campaign</p>
-  <h1>ZeptoClaw vs OpenClaw on <em>enterprise-mini</em></h1>
+  <h1>Seven models × two scaffolds on <em>enterprise-mini</em></h1>
   <p class="lede">
     Published numbers from a fixed pack of <strong>10 enterprise tool-use tasks</strong>, run under two CLI agent
     scaffolds against the same seven models. Each attempt starts from the same Docker fixture, hits the same
@@ -298,15 +298,20 @@
 <!-- READ -->
 <section id="read">
   <p class="kicker">Notes on the board</p>
-  <h2>What changes between 1 trial and 5</h2>
-  <p class="note">At <strong>1 trial</strong>, the two scaffolds look close on most models. The <strong>5-trial</strong>
-    cut (700 graded attempts) shifts a few cells and separates three effects. <strong>Variance:</strong> Sonnet 5 on
-    ZeptoClaw moves 0.80 → 0.92 success rate; Nemotron’s 0.80 drops to 0.64. <strong>Scaffold × model:</strong> Nemotron 3 Ultra
-    is <strong>0.64 rate / 0.50 consistency on ZeptoClaw</strong> and <strong>0.32 / 0.00 on OpenClaw</strong>; gpt-oss-120B
-    is the reverse pattern — <strong>1.00 / 1.00 on OpenClaw</strong> (~$0.04/attempt) while ZeptoClaw fails
-    support-ticket-routing repeatedly. sol and Flash are 1.00 / 1.00 on ZeptoClaw but each miss a task on OpenClaw.
-    <strong>Serving:</strong> Gemma’s expense-audit 0/5 on both agents tracks the flat-rate host’s 32K context limit,
-    not necessarily the weights. <strong>Success rate</strong> is the share of attempts that fully pass;
+  <h2>What the board shows — the pairing, not the axis</h2>
+  <p class="note"><strong>The board is a scaffold × model × trials grid, and the score belongs to the cell — not to any
+    one axis.</strong> <strong>No scaffold wins on average:</strong> pooled over all seven models, ZeptoClaw and OpenClaw
+    are a statistical tie — a paired bootstrap over the 70 (model, task) cells puts the success-rate gap at just
+    <strong>+0.07 at 1 trial</strong> (95% CI [−0.03, +0.16], p=0.18) and <strong>+0.02 at 5</strong> (p=0.52); both
+    cross zero. What decides a score is the <strong>pairing.</strong> Nemotron 3 Ultra is <strong>0.64 rate / 0.50
+    consistency on ZeptoClaw</strong> but <strong>0.32 / 0.00 on OpenClaw</strong>; gpt-oss-120B runs the reverse —
+    <strong>1.00 / 1.00 on OpenClaw</strong> (~$0.04/attempt) while ZeptoClaw fails support-ticket-routing repeatedly.
+    <strong>Read it with error bars:</strong> at ten tasks a single cell is noisy — that Nemotron 0.50 consistency
+    carries a 95% CI of <strong>[0.20, 0.80]</strong> — so the interaction pattern is the finding, never one two-decimal
+    cell. The <strong>5-trial</strong> cut (700 attempts) is what makes that legible: Sonnet 5 firms up 0.80 → 0.92,
+    Nemotron’s lucky 0.80 settles to 0.64. <strong>Serving still caps the ceiling:</strong> Gemma’s expense-audit 0/5 on
+    both scaffolds tracks the flat-rate host’s 32K context limit, not the weights. <strong>Success rate</strong> is the
+    share of attempts that fully pass;
     <strong>consistency</strong> is the share of tasks that pass all five trials (both named for what they measure;
     in the literature these are <span class="mono">pass@1</span> and <span class="mono">pass^5</span>).</p>
 
