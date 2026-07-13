@@ -140,12 +140,6 @@
   .fill{height:100%;border-radius:5px;display:flex;align-items:center;justify-content:flex-end;padding-right:7px;font-size:11px;font-weight:700;color:#fff;min-width:30px;transition:width 500ms ease}
   .fill.open{background:var(--open)} .fill.zepto{background:var(--zepto)}
   .fill.empty{background:transparent;color:var(--faint);justify-content:flex-start;padding-left:2px;font-weight:400}
-  /* 95% CI whisker overlaid on pass-rate bars. White + mix-blend-mode:difference
-     inverts against whatever is behind (blue/orange fill or the track), so it stays
-     visible in both themes without per-background color logic. */
-  .whisk{position:absolute;top:50%;transform:translateY(-50%);height:9px;box-sizing:border-box;
-    border-left:2px solid #fff;border-right:2px solid #fff;mix-blend-mode:difference;z-index:2}
-  .whisk::before{content:"";position:absolute;top:calc(50% - 1px);left:0;right:0;height:2px;background:#fff}
   .axis{font-size:10.5px;color:var(--faint);margin-top:4px;text-align:right;font-family:ui-monospace,monospace}
   .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
   table{border-collapse:collapse;width:100%;font-size:13px;min-width:600px}
@@ -304,19 +298,21 @@
 <!-- READ -->
 <section id="read">
   <p class="kicker">Notes on the board</p>
-  <h2>What the board shows — the pairing, not the axis</h2>
-  <p class="note"><strong>The board is a scaffold × model × trials grid, and the score belongs to the cell — not to any
-    one axis.</strong> <strong>No scaffold wins on average:</strong> pooled over all seven models, ZeptoClaw and OpenClaw
-    are a statistical tie — a paired bootstrap over the 70 (model, task) cells puts the success-rate gap at just
-    <strong>+0.07 at 1 trial</strong> (95% CI [−0.03, +0.16], p=0.18) and <strong>+0.02 at 5</strong> (p=0.52); both
-    cross zero. What decides a score is the <strong>pairing.</strong> Nemotron 3 Ultra is <strong>0.64 rate / 0.50
-    consistency on ZeptoClaw</strong> but <strong>0.32 / 0.00 on OpenClaw</strong>; gpt-oss-120B runs the reverse —
-    <strong>1.00 / 1.00 on OpenClaw</strong> (~$0.04/attempt) while ZeptoClaw fails support-ticket-routing repeatedly.
-    <strong>Read it with error bars:</strong> at ten tasks a single cell is noisy — that Nemotron 0.50 consistency
-    carries a 95% CI of <strong>[0.20, 0.80]</strong> — so the interaction pattern is the finding, never one two-decimal
-    cell. The <strong>5-trial</strong> cut (700 attempts) is what makes that legible: Sonnet 5 firms up 0.80 → 0.92,
-    Nemotron’s lucky 0.80 settles to 0.64. <strong>Serving still caps the ceiling:</strong> Gemma’s expense-audit 0/5 on
-    both scaffolds tracks the flat-rate host’s 32K context limit, not the weights. <strong>Success rate</strong> is the
+  <h2>What the board shows</h2>
+  <p class="note"><strong>Ten enterprise tool-use tasks — each a multi-step workflow over a ~50-tool mock stack, graded
+    on exact output artifacts — run five <em>independent</em> times per cell: fresh container, fresh workspace, fresh
+    budget-capped key every time.</strong> Five clean executions per cell is a read most leaderboards skip (they run
+    once): it separates a model that <em>can</em> from one that <em>reliably does</em> — the gap consistency measures.
+    Two findings come out cleanly. <strong>(1) The pairing decides, not the scaffold:</strong> Nemotron 3 Ultra is
+    <strong>0.64 rate / 0.50 consistency on ZeptoClaw</strong> but <strong>0.32 / 0.00 on OpenClaw</strong>; gpt-oss-120B
+    runs the reverse — <strong>1.00 / 1.00 on OpenClaw</strong> (~$0.04/attempt) while ZeptoClaw fails
+    support-ticket-routing repeatedly. <strong>(2) No scaffold wins on average:</strong> paired over the 70 (model, task)
+    cells the success-rate gap is +0.07 with a 95% CI crossing zero (p=0.18) — the interaction <em>is</em> the finding,
+    not a scaffold ranking. Hover any bar for its 95% bootstrap CI — pooled claims are the robust ones; single cells
+    read as directional. The <strong>5-trial</strong> cut (700 attempts) is what makes all of this legible: Sonnet 5
+    firms up 0.80 → 0.92 while Nemotron’s lucky 0.80 settles to 0.64. <strong>Serving still caps the ceiling:</strong>
+    Gemma’s expense-audit 0/5 on both scaffolds tracks the flat-rate host’s 32K context limit, not the weights.
+    <strong>Success rate</strong> is the
     share of attempts that fully pass;
     <strong>consistency</strong> is the share of tasks that pass all five trials (both named for what they measure;
     in the literature these are <span class="mono">pass@1</span> and <span class="mono">pass^5</span>).</p>
@@ -577,7 +573,7 @@ const CI={"openclaw|Sonnet 5|1":{"p1":[0.5,1.0]},"openclaw|GPT-5.6 sol|1":{"p1":
     rows.sort((a,b)=>dir*(Math.max(val(b.o)??-1,val(b.z)??-1)-Math.max(val(a.o)??-1,val(a.z)??-1)));
     $("#chartAxis").textContent = isCost ? ("$0 — $"+max.toFixed(2)+"  ·  per-token only")
       : isSec ? ("0 — "+max.toFixed(0)+"s  ·  median solve time (passing attempts), shortest first")
-      : isPass ? "0 — 100%  ·  whiskers = 95% CI (bootstrap over tasks)" : "0 — 100%";
+      : isPass ? "0 — 100%  ·  hover a bar for its 95% CI" : "0 — 100%";
     rows.forEach(r=>{
       const prov=(r.o||r.z).provider;
       const bar=(c,who,cls)=>{
@@ -586,9 +582,10 @@ const CI={"openclaw|Sonnet 5|1":{"p1":[0.5,1.0]},"openclaw|GPT-5.6 sol|1":{"p1":
         if(v==null){ const txt=c?(isCost?"~ flat-rate (not metered)":"—"):"—";
           return `<div class="brow">${wh}<div class="track"><div class="fill empty">${txt}</div></div></div>`; }
         const w=Math.max(3,(v/max)*100), lab=isCost?("$"+v.toFixed(3)):isSec?(v.toFixed(1)+"s"):v.toFixed(2);
+        // CIs stay one hover away (title attr) — drawn-on whiskers cluttered the bars.
         const ci=isPass&&c.ci?c.ci[state.metric==="pass_hat_5"?"p5":"p1"]:null;
-        const whisk=ci?`<span class="whisk" style="left:${(ci[0]*100).toFixed(1)}%;width:${Math.max(0,(ci[1]-ci[0])*100).toFixed(1)}%" title="95% CI ${ci[0].toFixed(2)}–${ci[1].toFixed(2)}"></span>`:"";
-        return `<div class="brow">${wh}<div class="track"><div class="fill ${cls}" style="width:${w}%">${lab}</div>${whisk}</div></div>`;
+        const tt=ci?` title="95% CI ${ci[0].toFixed(2)}–${ci[1].toFixed(2)}"`:"";
+        return `<div class="brow">${wh}<div class="track"${tt}><div class="fill ${cls}" style="width:${w}%">${lab}</div></div></div>`;
       };
       const bars=bar(r.o,"OpenClaw","open")+bar(r.z,"ZeptoClaw","zepto");
       host.insertAdjacentHTML("beforeend",
