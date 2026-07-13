@@ -216,8 +216,8 @@
   <div class="controls" style="margin-top:22px">
     <div class="cg"><span class="cl">Metric</span>
       <div class="seg" id="fMetric" role="group" aria-label="Choose metric">
-        <button data-v="pass_at_1" aria-pressed="true">success rate</button>
-        <button data-v="pass_hat_5" aria-pressed="false">consistency</button>
+        <button data-v="pass_hat_5" aria-pressed="true">consistency</button>
+        <button data-v="pass_at_1" aria-pressed="false">success rate</button>
         <button data-v="mean_correctness" aria-pressed="false">correctness</button>
         <button data-v="cost_of_success" aria-pressed="false">cost / success</button>
         <button data-v="s" aria-pressed="false">solve time</button>
@@ -528,7 +528,7 @@ const CI={"openclaw|Sonnet 5|1":{"p1":[0.5,1.0]},"openclaw|GPT-5.6 sol|1":{"p1":
 (function(){
   const $=s=>document.querySelector(s);
   const AName={openclaw:"OpenClaw",zeptoclaw:"ZeptoClaw"};
-  const state={trials:"5",metric:"pass_at_1",sortK:"pass_at_1",sortDir:-1};
+  const state={trials:"5",metric:"pass_hat_5",sortK:"pass_hat_5",sortDir:-1};
 
   // Publish only models that have BOTH a 1-trial and a 5-trial run — one model set everywhere.
   const KEEP=new Set(Object.keys(DATA.fiveTrial));
@@ -621,7 +621,7 @@ const CI={"openclaw|Sonnet 5|1":{"p1":[0.5,1.0]},"openclaw|GPT-5.6 sol|1":{"p1":
           return `<div class="tchip"><span class="ts" style="background:var(--${col})"></span><span class="tn">${t.task}${t.flag?' <span class="muted" style="font-size:9px">(transient)</span>':''}</span><span class="tsc">${t.correctness.toFixed(2)}</span>${tok(t.task)}</div>`;}).join("");
       }
       const head = state.trials==="5"
-        ? `${c.tasks5.filter(t=>t.passes===t.n).length}/10 tasks pass all 5 · ${AName[c.agent]} × ${c.model_label} (${c.n} attempts)`
+        ? `${c.tasks5.filter(t=>t.passes===t.n).length}/10 tasks pass all 5 · ${c.tasks5.filter(t=>t.passes>0&&t.passes<t.n).length} flaky (1–4 of 5) · ${AName[c.agent]} × ${c.model_label} (${c.n} attempts)`
         : `${c.passes}/${c.n} tasks passed · ${AName[c.agent]} × ${c.model_label}`;
       const tele = c.s!=null
         ? `<div class="eh" style="margin-top:2px;color:var(--muted);font-weight:400">per attempt: <b style="color:var(--text)">${c.s.toFixed(1)}s</b> active · <b style="color:var(--text)">${fmtK(c.ti)}</b> tokens in / <b style="color:var(--text)">${fmtK(c.to)}</b> out · <b style="color:var(--text)">${c.calls}</b> model calls · ${c.ca?'<b style="color:var(--text)">$'+c.ca.toFixed(3)+'</b>':'<span class="mono">~ flat</span>'}</div>`
@@ -741,7 +741,7 @@ const CI={"openclaw|Sonnet 5|1":{"p1":[0.5,1.0]},"openclaw|GPT-5.6 sol|1":{"p1":
       pass_at_1: five
         ? "<b>Success rate</b> (<span class='mono'>pass@1</span>) = passed attempts ÷ all attempts. Each model ran 10 tasks × 5 trials = 50 attempts; e.g. 46 of Sonnet’s 50 passed → 0.92. An attempt either fully passes or it doesn’t — no partial credit."
         : "<b>Success rate</b> (<span class='mono'>pass@1</span>) = passed tasks ÷ 10 tasks, one attempt each. Coarse: a single lucky or unlucky run moves it by 0.1 — the 5-trial view answers the same question with 5× the evidence.",
-      pass_hat_5: "<b>Consistency</b> (<span class='mono'>pass^5</span>) = tasks passed <b>all five times</b> ÷ 10 tasks. Dependability, not ability — pass a task 4 times out of 5 and it still counts 0 here. Sonnet: 8 of 10 tasks went 5-for-5 → 0.80.",
+      pass_hat_5: "<b>Consistency</b> (<span class='mono'>pass^5</span>) = tasks passed <b>all five times</b> ÷ 10 tasks. Dependability, not ability — pass a task 4 of 5 and it counts 0 here. Expand a row to see its <b>flaky</b> tasks (passed 1–4 of 5): those are the ones retries mask. Nemotron on OpenClaw is the extreme — 7 of 10 tasks flaky, 0 consistent.",
       mean_correctness: "<b>correctness</b> is not a pass rate — it’s the average <b>score</b>. Every attempt earns 0–1 from the weighted hidden checks, and near-misses count: doing 70% of the job adds 0.7 to correctness but 0 to success rate.",
       cost_of_success: "<b>cost / success</b> = everything spent on that agent×model — <b>failed attempts included</b> — divided by the number of passes. Per-token metered at the gateway; flat-rate hosting (Gemma) is excluded.",
       s: "<b>solve time</b> = <b>median active working time</b> across the <b>passing</b> attempts — model thinking + tool execution, container queue/setup excluded. Median over solves only (a failed run's timing isn't a solve's latency), matching the harness's <span class='mono'>median_active_seconds</span>. Not per-call API latency. Expand any table row for the rest of the telemetry: tokens in/out, model calls, cost per attempt."
