@@ -642,13 +642,15 @@
       <p class="research-meta">Independent Project &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; Docker sandboxes · LiteLLM gateway metering · split-phase grading · generated leaderboard &nbsp;·&nbsp; any CLI agent × any LLM provider</p>
 
       <p class="research-body">
-        Open-source benchmark <strong>infrastructure</strong>: run any CLI agent against any LLM on a versioned task
-        pack and get numbers you can defend. Every attempt is <strong>hermetic</strong> — fresh container, fresh
-        workspace, per-attempt budget-capped API key, gateway-only network — so dollars and tokens are
-        <strong>metered at the network edge, never self-reported</strong>, and grading runs in a separate trusted
-        container the agent can never touch. Five independent executions per cell turn "can it?" into "does it
-        <em>reliably</em>?" — the consistency and flakiness metrics most leaderboards can't compute from one run.
-        Adding an agent is one YAML file; every published number recomputes from raw attempt records.
+        Open-source benchmark <strong>infrastructure</strong>: evaluate <strong>any CLI agent against any LLM</strong>
+        on versioned packs of <strong>complex, multi-step enterprise and SWE tasks</strong> — full workflows over
+        mock tool stacks and planted-defect repos, graded on exact outcome artifacts — and get numbers you can
+        defend. Every attempt is <strong>hermetic</strong> — fresh container, fresh workspace, per-attempt
+        budget-capped API key, gateway-only network — so dollars and tokens are <strong>metered at the network
+        edge, never self-reported</strong>, and grading runs in a separate trusted container the agent can never
+        touch. Repeated independent executions per cell turn "can it?" into "does it <em>reliably</em>?" — the
+        consistency and flakiness metrics leaderboards can't compute from one run. Every published number
+        recomputes from raw attempt records.
       </p>
 
       <a class="metrics-link" href="makbench.html" aria-label="Open the MAKBench results page">
@@ -662,8 +664,8 @@
           <div class="metric-lbl">Of spend metered at the gateway — zero self-reported cost</div>
         </div>
         <div class="metric">
-          <div class="metric-val">700</div>
-          <div class="metric-lbl">Graded attempts on the demo board — 7 models × 2 scaffolds × 5 providers</div>
+          <div class="metric-val">1 YAML</div>
+          <div class="metric-lbl">To register a new agent — adapter config only, no harness code</div>
         </div>
       </div>
       </a>
@@ -677,7 +679,7 @@
         <li><strong>Controlled attempts.</strong> Fresh workspace, same fixture and git baseline, digest-pinned agent images, fixed CPU/memory and wall-clock/step budgets, gateway-only egress.</li>
         <li><strong>Gateway metering.</strong> Per-attempt budget-capped virtual keys; provider secrets stay on the host; spend and tokens come from the call log (per-token vs flat-rate not mixed in rankings).</li>
         <li><strong>Split-phase grading.</strong> Agent sandbox and verifier container are separate; workspace is mounted read-only for checks. Tasks fail on a pristine fixture (no-op scores zero).</li>
-        <li><strong>What a demo campaign found.</strong> 7 models × 2 scaffolds × 10 enterprise tasks × 5 trials: the scaffolds tie on average (paired bootstrap, 95% CI crosses zero) but the <strong>model×scaffold pairing</strong> swings the same model from reliable to useless — Nemotron consistency <strong>0.50 on ZeptoClaw vs 0.00 on OpenClaw</strong>, gpt-oss-120B the exact reverse. The kind of finding the harness exists to surface — details and ablations on the results page.</li>
+        <li><strong>Complex tasks by design.</strong> Task packs are full workflows, not quiz items: multi-step enterprise operations over mock tool stacks (CRM, mail, calendar, ticketing, policy engines) and planted-defect SWE repos. Outcome-graded against hidden weighted checks, with an anti-triviality gate — a no-op agent scores exactly zero. A live demo board and its findings (including why the same model can be reliable on one scaffold and useless on another) are on the results page.</li>
       </ul>
 
       <div class="card-links">
