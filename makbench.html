@@ -98,6 +98,9 @@
   .seg button[aria-pressed="true"]{background:var(--accent-bg);color:var(--accent);font-weight:600;box-shadow:inset 0 0 0 1px var(--accent-glow)}
   .seg button:disabled{opacity:.35;cursor:not-allowed}
   #board.solo th:first-child,#board.solo td.name:first-child{display:none}
+  /* consistency (pass^5) is a 5-trial-only metric — hide the whole column in the
+     1-trial view so it doesn't read as broken (matches hiding its toggle button). */
+  #board.hidec th:nth-child(4),#board.hidec td:nth-child(4){display:none}
   .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 16px}
   .tabs button{border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px;padding:6px 11px;border-radius:999px;cursor:pointer;font-family:ui-monospace,monospace;transition:all var(--transition)}
   .tabs button:hover{color:var(--text);border-color:var(--accent)}
@@ -745,8 +748,10 @@ const TELEM={"openclaw|Sonnet 5|1":{"s":43.6,"ti":234892,"to":2712,"calls":8.0,"
   function applyView(){
     const five=state.trials==="5";
     // pass^5 is only computable at 5 trials — hide it entirely elsewhere (a greyed
-    // button reads as broken; an absent one doesn't).
+    // button reads as broken; an absent one doesn't). Same for the table column,
+    // which would otherwise be a full column of "—" in the 1-trial view.
     document.querySelector('#fMetric button[data-v="pass_hat_5"]').hidden=!five;
+    $("#board").classList.toggle("hidec", !five);
     if(!five && state.metric==="pass_hat_5") setSeg("fMetric","metric","pass_at_1");
     const note=$("#viewNote");
     if(five){
