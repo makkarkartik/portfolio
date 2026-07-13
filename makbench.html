@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MAKBench — Agent Evaluation Harness · Kartik Makkar</title>
-<meta name="description" content="MAKBench results: ZeptoClaw vs OpenClaw on enterprise-mini (10 tasks), 1-trial and 5-trial runs, with gateway-metered cost. Includes a Nemotron 3 Ultra failure analysis.">
+<meta name="description" content="MAKBench results: seven models × two scaffolds on enterprise-mini (10 tasks × 5 independent trials), with gateway-metered cost. Includes a Nemotron 3 Ultra failure analysis.">
 <link rel="canonical" href="https://kartikmakkar.com/makbench.html">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <style>
@@ -98,9 +98,6 @@
   .seg button[aria-pressed="true"]{background:var(--accent-bg);color:var(--accent);font-weight:600;box-shadow:inset 0 0 0 1px var(--accent-glow)}
   .seg button:disabled{opacity:.35;cursor:not-allowed}
   #board.solo th:first-child,#board.solo td.name:first-child{display:none}
-  /* consistency (pass^5) is a 5-trial-only metric — hide the whole column in the
-     1-trial view so it doesn't read as broken (matches hiding its toggle button). */
-  #board.hidec th:nth-child(4),#board.hidec td:nth-child(4){display:none}
   .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 16px}
   .tabs button{border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px;padding:6px 11px;border-radius:999px;cursor:pointer;font-family:ui-monospace,monospace;transition:all var(--transition)}
   .tabs button:hover{color:var(--text);border-color:var(--accent)}
@@ -186,7 +183,7 @@
     Published numbers from a fixed pack of <strong>10 enterprise tool-use tasks</strong>, run under two CLI agent
     scaffolds against the same seven models. Each attempt starts from the same Docker fixture, hits the same
     wall-clock and step budgets, and routes every LLM call through one gateway so tokens and dollars are logged —
-    not self-reported. Charts below cover the <strong>1-trial</strong> and <strong>5-trial</strong> cuts; later
+    not self-reported. Every cell below is <strong>5 independent trials</strong> per task; later
     sections cover the harness, tasks, scoring, and a Nemotron 3 Ultra follow-up.
   </p>
   <div class="pills">
@@ -200,7 +197,7 @@
     <div class="stat"><div class="v">2</div><div class="l">Agent scaffolds</div></div>
     <div class="stat"><div class="v">7</div><div class="l">Models (5 providers)</div></div>
     <div class="stat"><div class="v">10</div><div class="l">Tasks in the pack</div></div>
-    <div class="stat"><div class="v">840</div><div class="l">Graded attempts in this board</div></div>
+    <div class="stat"><div class="v">700</div><div class="l">Graded attempts in this board</div></div>
   </div>
 </header>
 
@@ -208,23 +205,19 @@
 <section id="results">
   <p class="kicker">1 · Results</p>
   <h2>Model × scaffold scores</h2>
-  <p class="sub">Two published cuts over the same seven models: <strong>1 trial</strong> per task (coarse), and
-    <strong>5 trials</strong> per task (stability). Only models with both cuts appear. Choose a metric; click a
-    table row for the per-task breakdown.</p>
+  <p class="sub">Seven models × two scaffolds, <strong>five independent trials</strong> per task — 50 attempts per
+    cell, 700 graded attempts on the board. Choose a metric; click a table row for the per-task breakdown.</p>
 
-  <div class="callout" id="viewNote"></div>
+  <div class="callout" id="viewNote"><p style="margin:0"><b>10 tasks × 5 trials per cell — every trial a fresh
+    container, workspace, and budget-capped key.</b> <span style="color:var(--muted)">Single-run boards move ±0.1 on
+    luck alone (a lucky 1-trial run scored Nemotron 0.80; five trials say 0.64) — five independent executions are what
+    make these numbers stable.</span></p></div>
 
   <div class="controls" style="margin-top:22px">
-    <div class="cg"><span class="cl">View</span>
-      <div class="seg" id="fView" role="group" aria-label="View">
-        <button data-v="1" aria-pressed="true">1 trial</button>
-        <button data-v="5" aria-pressed="false">5 trials</button>
-      </div>
-    </div>
     <div class="cg"><span class="cl">Metric</span>
       <div class="seg" id="fMetric" role="group" aria-label="Choose metric">
         <button data-v="pass_at_1" aria-pressed="true">success rate</button>
-        <button data-v="pass_hat_5" aria-pressed="false" hidden>consistency</button>
+        <button data-v="pass_hat_5" aria-pressed="false">consistency</button>
         <button data-v="mean_correctness" aria-pressed="false">correctness</button>
         <button data-v="cost_of_success" aria-pressed="false">cost / success</button>
         <button data-v="s" aria-pressed="false">solve time</button>
@@ -259,12 +252,11 @@
       <tbody id="rows"></tbody>
     </table>
   </div>
-  <p class="note" style="margin-top:14px;font-size:12.5px">Cost, tokens, and calls come from the gateway log. <span class="mono">tokens in/out</span> and <span class="mono">calls</span> are per-attempt averages; <span class="mono">solve time</span> is the median over <em>passing</em> attempts (a failed run's timing isn't the latency of a solve). <span class="mono">tokens in</span> includes every billed input token (agents that re-read the transcript each turn show higher values). Gemma is on a flat-rate plan and shows <span class="mono">~</span> (excluded from cost ranking). <span class="mono">consistency</span> only exists in the 5-trial view.</p>
+  <p class="note" style="margin-top:14px;font-size:12.5px">Cost, tokens, and calls come from the gateway log. <span class="mono">tokens in/out</span> and <span class="mono">calls</span> are per-attempt averages; <span class="mono">solve time</span> is the median over <em>passing</em> attempts (a failed run's timing isn't the latency of a solve). <span class="mono">tokens in</span> includes every billed input token (agents that re-read the transcript each turn show higher values). Gemma is on a flat-rate plan and shows <span class="mono">~</span> (excluded from cost ranking).</p>
 
   <h3 style="margin:36px 0 6px;font-size:17px">Task × model matrix</h3>
-  <p class="note" style="margin:0 0 14px;font-size:13px">All tasks in the current view, sorted by mean pass rate
-    ascending. 1-trial cells: <span class="mono">✓</span> pass, a number = partial credit, <span class="mono">✗</span> zero.
-    5-trial cells: trials passed out of 5. <span class="mono">avg</span> is the row mean.</p>
+  <p class="note" style="margin:0 0 14px;font-size:13px">All ten tasks, hardest first (sorted by mean pass rate
+    ascending). Each cell: trials passed out of 5 for that agent×model. <span class="mono">avg</span> is the row mean.</p>
   <div class="tablewrap">
     <table id="heat"><thead></thead><tbody></tbody></table>
   </div>
@@ -536,7 +528,7 @@ const CI={"openclaw|Sonnet 5|1":{"p1":[0.5,1.0]},"openclaw|GPT-5.6 sol|1":{"p1":
 (function(){
   const $=s=>document.querySelector(s);
   const AName={openclaw:"OpenClaw",zeptoclaw:"ZeptoClaw"};
-  const state={trials:"1",metric:"pass_at_1",sortK:"pass_at_1",sortDir:-1};
+  const state={trials:"5",metric:"pass_at_1",sortK:"pass_at_1",sortDir:-1};
 
   // Publish only models that have BOTH a 1-trial and a 5-trial run — one model set everywhere.
   const KEEP=new Set(Object.keys(DATA.fiveTrial));
@@ -659,10 +651,9 @@ const CI={"openclaw|Sonnet 5|1":{"p1":[0.5,1.0]},"openclaw|GPT-5.6 sol|1":{"p1":
   };
   const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   function taskStats(id){
-    let a=0,ap=0,t=0,tp=0;
-    cellsFor("1").forEach(c=>{const x=c.tasks.find(y=>y.task===id); if(x){a++; if(x.passed)ap++;}});
+    let t=0,tp=0;
     [DATA.fiveTrial,DATA.fiveTrialOC].forEach(o=>Object.values(o).forEach(d=>{const x=d.tasks.find(y=>y.task===id); if(x){t+=x.n; tp+=x.passes;}}));
-    return {a,ap,t,tp};
+    return {t,tp};
   }
   function renderTask(id){
     const t=TASKS.find(x=>x.id===id), s=taskStats(id), m=TASKMETA[id];
@@ -677,7 +668,7 @@ const CI={"openclaw|Sonnet 5|1":{"p1":[0.5,1.0]},"openclaw|GPT-5.6 sol|1":{"p1":
         <div class="tree" style="font-size:12px;margin-top:8px">/workspace/<br>${m.ws.map(([f,note])=>`├─ <span class="hi">${f}</span><span class="dim"> — ${note}</span>`).join("<br>")}<br>├─ TOOLS.md<span class="dim"> — how to drive the tools</span><br>└─ .mak/<span class="dim"> — prompt + git baseline</span></div>
         <p class="plab" style="margin-top:16px">A correct solution</p>
         <p class="note" style="font-size:12.5px;margin-top:6px">${m.expect}</p>
-        <p class="note" style="margin-top:14px;font-size:12.5px">On this task: <b style="color:var(--text)">${s.ap}/${s.a}</b> agent×model pairs pass head-to-head · <b style="color:var(--text)">${s.tp}/${s.t}</b> reliability trials pass.</p>
+        <p class="note" style="margin-top:14px;font-size:12.5px">On this task: <b style="color:var(--text)">${s.tp}/${s.t}</b> trials pass across all agent×model cells.</p>
       </div></div>`;
   }
   $("#taskTabs").innerHTML=TASKS.map(t=>`<button data-v="${t.id}" aria-pressed="false">${t.id}</button>`).join("");
@@ -758,23 +749,6 @@ const CI={"openclaw|Sonnet 5|1":{"p1":[0.5,1.0]},"openclaw|GPT-5.6 sol|1":{"p1":
     $("#metricNote").innerHTML=M[state.metric]||"";
   }
 
-  function applyView(){
-    const five=state.trials==="5";
-    // pass^5 is only computable at 5 trials — hide it entirely elsewhere (a greyed
-    // button reads as broken; an absent one doesn't). Same for the table column,
-    // which would otherwise be a full column of "—" in the 1-trial view.
-    document.querySelector('#fMetric button[data-v="pass_hat_5"]').hidden=!five;
-    $("#board").classList.toggle("hidec", !five);
-    if(!five && state.metric==="pass_hat_5") setSeg("fMetric","metric","pass_at_1");
-    const note=$("#viewNote");
-    if(five){
-      note.innerHTML='<p style="margin:0"><b>5-trial view — both agents, 10 tasks × 5 trials (50 attempts per cell, 700 total).</b> <span style="color:var(--muted)"><span class="mono">consistency</span> = fraction of tasks that passed all five trials. Same fixtures and budgets; bar gaps are scaffold or model differences.</span></p>';
-      note.style.borderLeftColor="var(--zepto)";
-    } else {
-      note.innerHTML='<p style="margin:0"><b>1-trial view — OpenClaw vs ZeptoClaw, one attempt per task.</b> <span style="color:var(--muted)">Single-run rates move ±0.1 easily; use the 5-trial view for stability. Only models present in both cuts are listed.</span></p>';
-      note.style.borderLeftColor="var(--warn)";
-    }
-  }
   function setSeg(id,key,v){
     state[key]=v;
     document.querySelectorAll(`#${id} button`).forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===v?"true":"false"));
@@ -784,14 +758,13 @@ const CI={"openclaw|Sonnet 5|1":{"p1":[0.5,1.0]},"openclaw|GPT-5.6 sol|1":{"p1":
       if(b.disabled)return; setSeg(id,key,b.dataset.v); after&&after(); metricNote(); drawChart(); drawTable(); drawHeat();
     }));
   }
-  wireSeg("fView","trials",applyView);
   wireSeg("fMetric","metric");
   document.querySelectorAll("#board thead th").forEach(th=>th.addEventListener("click",()=>{
     const k=th.dataset.k;
     if(state.sortK===k)state.sortDir*=-1; else{state.sortK=k;state.sortDir=(k==="agent"||k==="model_label")?1:-1;}
     drawTable();
   }));
-  applyView(); metricNote(); drawChart(); drawTable(); drawHeat();
+  metricNote(); drawChart(); drawTable(); drawHeat();
 })();
 </script>
 </body>

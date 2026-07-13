@@ -644,10 +644,10 @@
       <p class="research-body">
         Open-source harness for running CLI agents against LLMs on a fixed pack of tool-use tasks. Each attempt
         starts from the same Docker fixture, routes LLM calls through one gateway (tokens and spend logged there),
-        and is graded in a separate trusted container. Published board: ZeptoClaw vs OpenClaw, 1-trial and 5-trial
-        cuts. The two scaffolds are a <strong>statistical tie</strong> on average (paired diff +0.07, 95% CI crosses
-        zero) — what moves a model's score is the specific <strong>model×scaffold pairing</strong>: Nemotron is
-        reliable on one scaffold and useless on the other.
+        and is graded in a separate trusted container. Published board: seven models × two scaffolds, <strong>five
+        independent trials</strong> per task. The two scaffolds are a <strong>statistical tie</strong> on average
+        (paired diff +0.07, 95% CI crosses zero) — what moves a model's score is the specific
+        <strong>model×scaffold pairing</strong>: Nemotron is reliable on one scaffold and useless on the other.
       </p>
 
       <a class="metrics-link" href="makbench.html" aria-label="Open the MAKBench results page">
@@ -661,7 +661,7 @@
           <div class="metric-lbl">Models · providers on one gateway</div>
         </div>
         <div class="metric">
-          <div class="metric-val">840</div>
+          <div class="metric-val">700</div>
           <div class="metric-lbl">Graded attempts on this board</div>
         </div>
       </div>
