@@ -243,6 +243,64 @@
       margin-bottom: 32px;
     }
 
+    /* ── PROJECTS CAROUSEL ──────────────────────────────── */
+    .projects-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .projects-head .section-label { margin-bottom: 0; }
+    .carousel-controls { display: flex; gap: 8px; }
+    .carousel-btn {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-2);
+      cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: all var(--transition);
+    }
+    .carousel-btn:hover { border-color: var(--border-hv); color: var(--text); }
+    .carousel-btn:disabled { opacity: .35; cursor: default; }
+    .carousel-btn svg { width: 16px; height: 16px; }
+    .projects-carousel {
+      display: flex;
+      gap: 18px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      padding: 4px 2px 18px;
+      margin: 0 -4px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-hv) transparent;
+    }
+    .projects-carousel::-webkit-scrollbar { height: 6px; }
+    .projects-carousel::-webkit-scrollbar-thumb {
+      background: var(--border-hv);
+      border-radius: 999px;
+    }
+    .carousel-slide {
+      flex: 0 0 min(100%, 680px);
+      scroll-snap-align: start;
+      max-height: none;
+    }
+    .project-shot {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      margin: 0 0 18px;
+      display: block;
+      background: #0a0c12;
+    }
+    @media (max-width: 720px) {
+      .carousel-slide { flex-basis: 88%; }
+    }
+
     /* ── RESEARCH CARD ──────────────────────────────────── */
     .research-card {
       background: var(--surface);
@@ -545,7 +603,7 @@
     <a href="#" class="nav-brand">Kartik Makkar</a>
     <div class="nav-right">
       <ul class="nav-links">
-        <li><a href="#research">Research</a></li>
+        <li><a href="#projects">Projects</a></li>
         <li><a href="#experience">Experience</a></li>
         <li><a href="#skills">Skills</a></li>
         <li><a href="#education">Education</a></li>
@@ -587,10 +645,47 @@
 
 <main>
 
-  <!-- RESEARCH -->
-  <section id="research">
-    <p class="section-label fade-up">Applied ML Research</p>
-    <div class="research-card fade-up">
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="projects-head fade-up">
+      <p class="section-label">Projects</p>
+      <div class="carousel-controls" aria-label="Project carousel controls">
+        <button type="button" class="carousel-btn" id="carouselPrev" aria-label="Previous project">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button type="button" class="carousel-btn" id="carouselNext" aria-label="Next project">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="projects-carousel fade-up" id="projectsCarousel" tabindex="0" aria-label="Projects carousel">
+
+    <article class="research-card carousel-slide">
+      <p class="research-title">Conclave — Multi-expert deliberation rooms<br>Round-robin agents that critique until they converge</p>
+      <p class="research-meta">Independent Project &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; FastAPI · LangGraph · React/Vite · BYOK OpenAI / Anthropic / Google</p>
+
+      <img class="project-shot" src="assets/conclave-ui.png" alt="Conclave UI — multi-expert room with thoughts, shared-doc diffs, and converged solution" width="1280" height="800" loading="lazy" />
+
+      <p class="research-body">
+        A ChatGPT-style workspace where you seat LLM experts, set a topic, and let them
+        <strong>deliberate in round-robin</strong> — streaming thoughts, updating a shared document,
+        and refining a proposal until they converge (or you pause to direct). Built as a maintainable
+        monorepo so desktop packaging later doesn't force a rewrite.
+      </p>
+
+      <ul class="research-bullets">
+        <li><strong>Orchestration.</strong> LangGraph room loop with chair turns, lap checks, binding chair direction, and a safety ceiling — convergence only when votes and proposals actually agree.</li>
+        <li><strong>Shared workspace.</strong> Attachments, collaborative markdown doc with live diffs in-thread, and a markdown converged-solution panel that appears only after true convergence.</li>
+        <li><strong>BYOK connectors.</strong> One developer API key per provider (OpenAI / Anthropic / Google) — edit, rename, delete experts and rooms without rewiring the stack.</li>
+      </ul>
+
+      <div class="card-links">
+        <a href="https://github.com/makkarkartik/conclave" class="card-link primary">GitHub ↗</a>
+      </div>
+    </article>
+
+    <article class="research-card carousel-slide">
       <p class="research-title">Domain-Specialized SLM Fine-Tuning — Gemma 12B (bf16 LoRA)<br>for Grounded RAG That Knows When to Refuse</p>
       <p class="research-meta">Independent Project &nbsp;·&nbsp; 2025–2026 &nbsp;·&nbsp; bf16 LoRA on 8×H200 single-node DDP (Modal) &nbsp;·&nbsp; benchmarked head-to-head vs GPT-5.4 / GPT-5.4-mini</p>
 
@@ -635,9 +730,9 @@
         <a href="hcft.html" class="card-link primary">View results dashboard ↗</a>
         <a href="https://github.com/makkarkartik" class="card-link">GitHub ↗</a>
       </div>
-    </div>
+    </article>
 
-    <div class="research-card fade-up" style="margin-top:20px">
+    <article class="research-card carousel-slide">
       <p class="research-title">MAKBench — Agent evaluation harness<br>Hermetic, cost-metered, reliability-first</p>
       <p class="research-meta">Independent Project &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; Docker sandboxes · LiteLLM gateway metering · split-phase grading · generated leaderboard &nbsp;·&nbsp; any CLI agent × any LLM provider</p>
 
@@ -669,6 +764,8 @@
         <a href="makbench.html" class="card-link primary">View results ↗</a>
         <a href="https://github.com/makkarkartik/makbench" class="card-link">GitHub ↗</a>
       </div>
+    </article>
+
     </div>
   </section>
 
@@ -929,6 +1026,39 @@
   }, { threshold: 0.08 });
 
   document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // Projects carousel
+  (function () {
+    const track = document.getElementById('projectsCarousel');
+    const prev = document.getElementById('carouselPrev');
+    const next = document.getElementById('carouselNext');
+    if (!track || !prev || !next) return;
+
+    function slideWidth() {
+      const slide = track.querySelector('.carousel-slide');
+      if (!slide) return track.clientWidth;
+      const styles = getComputedStyle(track);
+      const gap = parseFloat(styles.columnGap || styles.gap || '0') || 0;
+      return slide.getBoundingClientRect().width + gap;
+    }
+
+    function updateButtons() {
+      const max = track.scrollWidth - track.clientWidth - 2;
+      prev.disabled = track.scrollLeft <= 2;
+      next.disabled = track.scrollLeft >= max;
+    }
+
+    function scrollByDir(dir) {
+      track.scrollBy({ left: dir * slideWidth(), behavior: 'smooth' });
+    }
+
+    prev.addEventListener('click', () => scrollByDir(-1));
+    next.addEventListener('click', () => scrollByDir(1));
+    track.addEventListener('scroll', () => requestAnimationFrame(updateButtons), { passive: true });
+    window.addEventListener('resize', updateButtons);
+    updateButtons();
+  })();
+
 
   // ── Résumé viewer modal ─────────────────────────────
   const resumeOverlay = document.getElementById('resumeOverlay');
