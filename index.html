@@ -11,7 +11,7 @@
   <style>
     /* ── TOKENS ─────────────────────────────────────────── */
     :root {
-      --max: 1400px;
+      --max: 1080px;
       --radius: 8px;
       --transition: 200ms ease;
     }
@@ -152,7 +152,7 @@
       font-size: 16px;
       color: var(--text-2);
       line-height: 1.8;
-      max-width: 820px;
+      max-width: 640px;
       margin-bottom: 36px;
     }
     .hero-summary strong { color: var(--text); font-weight: 600; }
@@ -285,14 +285,14 @@
       border-radius: 999px;
     }
     .carousel-slide {
-      flex: 0 0 100%;
+      flex: 0 0 min(86%, 900px);
       scroll-snap-align: start;
       max-height: none;
     }
     .project-shot {
       width: 100%;
-      height: auto;
-      max-height: 420px;
+      aspect-ratio: 16 / 9;
+      max-height: 360px;
       object-fit: cover;
       object-position: top center;
       border-radius: 10px;
@@ -302,8 +302,9 @@
       background: #0a0c12;
     }
     @media (max-width: 720px) {
-      .carousel-slide { flex-basis: 100%; }
+      .carousel-slide { flex-basis: 92%; }
       .research-card { padding: 22px 18px; }
+      .project-shot { max-height: 220px; }
     }
 
     /* ── RESEARCH CARD ──────────────────────────────────── */
@@ -670,7 +671,7 @@
       <p class="research-title">Conclave — Multi-expert deliberation rooms<br>Round-robin agents that critique until they converge</p>
       <p class="research-meta">Independent Project &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; FastAPI · LangGraph · React/Vite · BYOK OpenAI / Anthropic / Google</p>
 
-      <img class="project-shot" src="assets/conclave-ui.png" alt="Conclave UI — multi-expert room with thoughts, shared-doc diffs, and converged solution" width="1600" height="580" loading="lazy" />
+      <img class="project-shot" src="assets/conclave-ui.png" alt="Conclave UI — multi-expert room with thoughts, shared-doc diffs, and converged solution" width="1600" height="900" loading="lazy" />
 
       <p class="research-body">
         A ChatGPT-style workspace where you seat LLM experts, set a topic, and let them
