@@ -11,7 +11,7 @@
   <style>
     /* ── TOKENS ─────────────────────────────────────────── */
     :root {
-      --max: 800px;
+      --max: 1080px;
       --radius: 8px;
       --transition: 200ms ease;
     }
@@ -152,7 +152,7 @@
       font-size: 16px;
       color: var(--text-2);
       line-height: 1.8;
-      max-width: 620px;
+      max-width: 640px;
       margin-bottom: 36px;
     }
     .hero-summary strong { color: var(--text); font-weight: 600; }
@@ -241,6 +241,25 @@
       text-transform: uppercase;
       color: var(--accent);
       margin-bottom: 32px;
+    }
+
+    /* ── PROJECTS ───────────────────────────────────────── */
+    .projects-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .project-shot {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      margin: 0 0 18px;
+      display: block;
+      background: #0a0c12;
+    }
+    @media (max-width: 720px) {
+      .research-card { padding: 22px 18px; }
     }
 
     /* ── RESEARCH CARD ──────────────────────────────────── */
@@ -545,7 +564,7 @@
     <a href="#" class="nav-brand">Kartik Makkar</a>
     <div class="nav-right">
       <ul class="nav-links">
-        <li><a href="#research">Research</a></li>
+        <li><a href="#projects">Projects</a></li>
         <li><a href="#experience">Experience</a></li>
         <li><a href="#skills">Skills</a></li>
         <li><a href="#education">Education</a></li>
@@ -587,10 +606,37 @@
 
 <main>
 
-  <!-- RESEARCH -->
-  <section id="research">
-    <p class="section-label fade-up">Applied ML Research</p>
-    <div class="research-card fade-up">
+  <!-- PROJECTS -->
+  <section id="projects">
+    <p class="section-label fade-up">Projects</p>
+
+    <div class="projects-list">
+
+    <article class="research-card fade-up">
+      <p class="research-title">Conclave — Multi-expert deliberation rooms<br>Round-robin agents that critique until they converge</p>
+      <p class="research-meta">Independent Project &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; FastAPI · LangGraph · React/Vite · BYOK OpenAI / Anthropic / Google</p>
+
+      <img class="project-shot" src="assets/conclave-ui.png?v=4" alt="Conclave UI — experts defining a dog for someone who has never seen one, with deliberation thread and converged solution" width="1600" height="900" loading="lazy" />
+
+      <p class="research-body">
+        A ChatGPT-style workspace where you seat LLM experts, set a topic, and let them
+        <strong>deliberate in round-robin</strong> — streaming thoughts, updating a shared document,
+        and refining a proposal until they converge (or you pause to direct). Built as a maintainable
+        monorepo so desktop packaging later doesn't force a rewrite.
+      </p>
+
+      <ul class="research-bullets">
+        <li><strong>Orchestration.</strong> LangGraph room loop with chair turns, lap checks, binding chair direction, and a safety ceiling — convergence only when votes and proposals actually agree.</li>
+        <li><strong>Shared workspace.</strong> Attachments, collaborative markdown doc with live diffs in-thread, and a markdown converged-solution panel that appears only after true convergence.</li>
+        <li><strong>BYOK connectors.</strong> One developer API key per provider (OpenAI / Anthropic / Google) — edit, rename, delete experts and rooms without rewiring the stack.</li>
+      </ul>
+
+      <div class="card-links">
+        <a href="https://github.com/makkarkartik/conclave" class="card-link primary">GitHub ↗</a>
+      </div>
+    </article>
+
+    <article class="research-card fade-up">
       <p class="research-title">Domain-Specialized SLM Fine-Tuning — Gemma 12B (bf16 LoRA)<br>for Grounded RAG That Knows When to Refuse</p>
       <p class="research-meta">Independent Project &nbsp;·&nbsp; 2025–2026 &nbsp;·&nbsp; bf16 LoRA on 8×H200 single-node DDP (Modal) &nbsp;·&nbsp; benchmarked head-to-head vs GPT-5.4 / GPT-5.4-mini</p>
 
@@ -635,9 +681,9 @@
         <a href="hcft.html" class="card-link primary">View results dashboard ↗</a>
         <a href="https://github.com/makkarkartik" class="card-link">GitHub ↗</a>
       </div>
-    </div>
+    </article>
 
-    <div class="research-card fade-up" style="margin-top:20px">
+    <article class="research-card fade-up">
       <p class="research-title">MAKBench — Agent evaluation harness<br>Hermetic, cost-metered, reliability-first</p>
       <p class="research-meta">Independent Project &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; Docker sandboxes · LiteLLM gateway metering · split-phase grading · generated leaderboard &nbsp;·&nbsp; any CLI agent × any LLM provider</p>
 
@@ -669,6 +715,8 @@
         <a href="makbench.html" class="card-link primary">View results ↗</a>
         <a href="https://github.com/makkarkartik/makbench" class="card-link">GitHub ↗</a>
       </div>
+    </article>
+
     </div>
   </section>
 
