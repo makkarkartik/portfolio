@@ -17,7 +17,21 @@
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body class="locked">
+    <div id="gate" class="gate">
+      <form id="gate-form" class="gate-card" autocomplete="current-password">
+        <p class="kicker">Ittina Mahavir</p>
+        <h1>Enter password</h1>
+        <p class="hint">The map stays hidden until this matches.</p>
+        <label>
+          Password
+          <input id="gate-password" type="password" required autofocus />
+        </label>
+        <button type="submit">Open map</button>
+        <p id="gate-error" class="gate-error" role="alert"></p>
+      </form>
+    </div>
+
     <div id="map"></div>
 
     <aside class="panel panel-left">
@@ -108,8 +122,11 @@
         <div class="row">
           <button type="button" id="export-tags">Export tags</button>
           <button type="button" id="import-tags">Import tags</button>
+          <button type="button" id="scan-listings">Scan listings</button>
           <input id="import-file" type="file" accept="application/json" hidden />
         </div>
+        <div id="scan-status" class="scan-status"></div>
+        <div id="listing-hits" class="listing-hits"></div>
       </div>
 
       <div id="unit-list" class="unit-list"></div>
@@ -117,6 +134,7 @@
       <form id="unit-editor" class="editor hidden">
         <h2 id="editor-title">Unit</h2>
         <p id="editor-location" class="hint"></p>
+        <p id="editor-listing" class="hint"></p>
 
         <button type="button" id="tag-sale" class="sale-toggle">
           Available for Sale
@@ -156,9 +174,6 @@
       <span><i class="swatch sale"></i> For sale</span>
     </div>
 
-    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-    <script src="map-data.js"></script>
-    <script src="inventory.js"></script>
-    <script src="app.js"></script>
+    <script src="gate.js"></script>
   </body>
 </html>

@@ -25,6 +25,67 @@ body,
   color: var(--cream);
 }
 
+body.locked #map,
+body.locked .panel,
+body.locked .legend {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background: #0e0c0a;
+  padding: 24px;
+}
+
+.gate-card {
+  width: min(360px, 100%);
+  padding: 22px 20px 18px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+}
+
+.gate-card h1 {
+  font-family: Fraunces, Georgia, serif;
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  margin: 0 0 8px;
+}
+
+.gate-card label {
+  display: block;
+  margin: 14px 0 10px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.gate-card input {
+  margin-top: 6px;
+  width: 100%;
+  text-transform: none;
+}
+
+.gate-card button {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.gate-error {
+  min-height: 1.2em;
+  margin: 10px 0 0;
+  color: #e39a8a;
+  font-size: 13px;
+}
+
 .panel {
   position: absolute;
   top: 16px;
@@ -155,7 +216,8 @@ button,
 input[type="text"],
 input[type="search"],
 input[type="date"],
-input[type="number"] {
+input[type="number"],
+input[type="password"] {
   appearance: none;
   border: 1px solid var(--panel-border);
   background: rgba(255, 255, 255, 0.05);
@@ -242,6 +304,72 @@ footer {
 
 .filters {
   margin: 8px 0 10px;
+}
+
+.scan-status {
+  margin: 10px 0 8px;
+}
+
+.scan-status p,
+.listing-card p {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.scan-status strong {
+  color: var(--cream);
+  font-weight: 560;
+}
+
+.scan-meta {
+  font-size: 12px !important;
+}
+
+.scan-errors {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.scan-errors li {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.scan-errors span {
+  color: #c9a078;
+  font-variant-numeric: tabular-nums;
+}
+
+.listing-hits {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.listing-card {
+  padding: 10px 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.listing-card strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--cream);
+  font-size: 14px;
+}
+
+.listing-card a {
+  color: var(--gold);
+  font-size: 12px;
 }
 
 .unit-list {
