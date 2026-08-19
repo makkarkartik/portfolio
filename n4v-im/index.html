@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Ittina Mahavir · 3D Map</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Outfit:wght@360;420;560;650&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <aside class="panel panel-left">
+      <header class="brand">
+        <p class="kicker">Electronic City Phase 1 · Bengaluru</p>
+        <h1>Ittina Mahavir</h1>
+        <p class="lede">
+          3D campus map on OpenStreetMap, plus a reconstructed apartment
+          directory. Click a unit to tag it for sale.
+        </p>
+      </header>
+
+      <dl class="stats">
+        <div>
+          <dt>Blocks</dt>
+          <dd>15</dd>
+        </div>
+        <div>
+          <dt>Units</dt>
+          <dd>1,024</dd>
+        </div>
+        <div>
+          <dt>For sale</dt>
+          <dd id="sale-count">0</dd>
+        </div>
+        <div>
+          <dt>Site</dt>
+          <dd>10 acres</dd>
+        </div>
+      </dl>
+
+      <section>
+        <h2>Layers</h2>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-satellite" />
+          Satellite overlay
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-labels" checked />
+          Block labels
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-orbit" />
+          Slow orbit
+        </label>
+      </section>
+
+      <section>
+        <h2>Camera</h2>
+        <p class="hint">The brochure north arrow points right. Layout map view matches that page; North up matches OpenStreetMap.</p>
+        <div class="row">
+          <button type="button" id="view-3d">3D view</button>
+          <button type="button" id="view-layout">Layout map</button>
+          <button type="button" id="view-top">North up</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Blocks</h2>
+        <p class="hint">On the layout map, cell 12 is on the west bar of G (top of the page). G-312 is that stack on floor 3. Tagging greens that apartment, not the tower.</p>
+        <div id="block-grid" class="block-grid"></div>
+      </section>
+
+      <footer>
+        Door list is reconstructed. Building footprints and streets are OpenStreetMap.
+        © OpenStreetMap contributors.
+      </footer>
+    </aside>
+
+    <aside class="panel panel-right">
+      <header class="brand compact">
+        <h2 class="panel-title">Apartments</h2>
+        <p class="hint" id="inventory-summary"></p>
+        <p class="hint" id="storage-status"></p>
+      </header>
+
+      <div class="filters">
+        <input id="unit-search" type="search" placeholder="Search E-312, owner, block…" />
+        <div class="row wrap">
+          <select id="filter-block">
+            <option value="">All blocks</option>
+          </select>
+          <label class="toggle tight">
+            <input type="checkbox" id="filter-sale" />
+            For sale
+          </label>
+        </div>
+        <div class="row">
+          <button type="button" id="export-tags">Export tags</button>
+          <button type="button" id="import-tags">Import tags</button>
+          <input id="import-file" type="file" accept="application/json" hidden />
+        </div>
+      </div>
+
+      <div id="unit-list" class="unit-list"></div>
+
+      <form id="unit-editor" class="editor hidden">
+        <h2 id="editor-title">Unit</h2>
+        <p id="editor-location" class="hint"></p>
+
+        <button type="button" id="tag-sale" class="sale-toggle">
+          Available for Sale
+        </button>
+        <p class="hint">Click to tag. Click again to remove the tag and mark unavailable.</p>
+
+        <label>
+          Available since
+          <input id="field-since" type="date" />
+        </label>
+        <label>
+          Owner(s) name
+          <input id="field-owners" type="text" placeholder="One or more names" />
+        </label>
+        <label>
+          Priced at
+          <input id="field-price" type="text" placeholder="e.g. ₹85 L" />
+        </label>
+        <label>
+          Floor number
+          <input id="field-floor" type="number" min="1" max="6" />
+        </label>
+        <fieldset>
+          <legend>Parking location</legend>
+          <div class="row">
+            <button type="button" class="seg" id="parking-unknown">Unknown</button>
+            <button type="button" class="seg" id="parking-known">Known</button>
+          </div>
+          <input id="field-parking" type="text" placeholder="Bay ID, e.g. Basement B1-042" />
+        </fieldset>
+        <button type="button" id="clear-tags" class="ghost">Clear all tags on this unit</button>
+      </form>
+    </aside>
+
+    <div class="legend">
+      <span><i class="swatch block"></i> OSM buildings</span>
+      <span><i class="swatch sale"></i> For sale</span>
+    </div>
+
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="map-data.js"></script>
+    <script src="inventory.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
