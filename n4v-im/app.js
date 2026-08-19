@@ -5,8 +5,7 @@ const START = {
   center: data.center,
   zoom: 17.35,
   pitch: 58,
-  // Brochure north arrow points right; OSM north-up is 90° off that page.
-  bearing: -90,
+  bearing: 0,
 };
 
 const map = new maplibregl.Map({
