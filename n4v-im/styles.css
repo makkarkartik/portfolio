@@ -28,8 +28,7 @@ body,
 body.locked #map,
 body.locked .panel,
 body.locked .legend {
-  visibility: hidden;
-  pointer-events: none;
+  display: none !important;
 }
 
 .gate {
