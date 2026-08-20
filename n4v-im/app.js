@@ -95,7 +95,7 @@ function bindHover(layer, htmlFor) {
 
 function hideBasemapBuildings() {
   map.getStyle().layers.forEach((layer) => {
-    if (layer.type === "fill-extrusion" && !["osm-campus-3d", "units-3d"].includes(layer.id)) {
+    if (layer.type === "fill-extrusion" && !["osm-campus-3d", "units-3d", "balconies-3d"].includes(layer.id)) {
       map.setLayoutProperty(layer.id, "visibility", "none");
     }
   });
@@ -146,7 +146,7 @@ map.on("load", async () => {
     paint: {
       "fill-extrusion-color": ["get", "color"],
       "fill-extrusion-height": ["get", "height"],
-      "fill-extrusion-opacity": 0.88,
+      "fill-extrusion-opacity": 0.96,
       "fill-extrusion-vertical-gradient": true,
     },
   }, before);
@@ -154,28 +154,45 @@ map.on("load", async () => {
     id: "units-3d",
     type: "fill-extrusion",
     source: "units",
+    filter: ["!=", ["get", "kind"], "balcony"],
     paint: {
       "fill-extrusion-color": ["get", "color"],
-      "fill-extrusion-height": 3.2,
-      "fill-extrusion-base": 0.7,
-      "fill-extrusion-opacity": 0.96,
+      "fill-extrusion-height": ["get", "top"],
+      "fill-extrusion-base": ["get", "base"],
+      "fill-extrusion-opacity": 0.98,
       "fill-extrusion-vertical-gradient": true,
+    },
+  }, before);
+  map.addLayer({
+    id: "balconies-3d",
+    type: "fill-extrusion",
+    source: "units",
+    filter: ["==", ["get", "kind"], "balcony"],
+    paint: {
+      "fill-extrusion-color": ["get", "color"],
+      "fill-extrusion-height": ["get", "top"],
+      "fill-extrusion-base": ["get", "base"],
+      "fill-extrusion-opacity": 1,
+      "fill-extrusion-vertical-gradient": false,
     },
   }, before);
   map.addLayer({
     id: "units-outline",
     type: "line",
     source: "units",
+    filter: [
+      "all",
+      ["!=", ["get", "kind"], "balcony"],
+      ["any", ["==", ["get", "selected"], 1], ["==", ["get", "forSale"], 1]],
+    ],
     paint: {
       "line-color": [
         "case",
         ["==", ["get", "selected"], 1],
         "#ffffff",
-        ["==", ["get", "forSale"], 1],
         "#0b3d2c",
-        "#6a4a28",
       ],
-      "line-width": ["case", ["==", ["get", "selected"], 1], 2.2, 0.9],
+      "line-width": ["case", ["==", ["get", "selected"], 1], 2.2, 1.2],
     },
   }, before);
   map.addLayer({
@@ -190,8 +207,8 @@ map.on("load", async () => {
       "text-allow-overlap": true,
     },
     paint: {
-      "text-color": "#1a120c",
-      "text-halo-color": "#fff7ea",
+      "text-color": "#3b2410",
+      "text-halo-color": "#fffef8",
       "text-halo-width": 1.1,
     },
   });
@@ -206,8 +223,8 @@ map.on("load", async () => {
       "text-allow-overlap": true,
     },
     paint: {
-      "text-color": "#3b2410",
-      "text-halo-color": "#fff7ea",
+      "text-color": "#2c2623",
+      "text-halo-color": "#fffef8",
       "text-halo-width": 1.3,
     },
   });
@@ -237,13 +254,14 @@ map.on("load", async () => {
   await window.IttinaInventory.init(map);
 
   bindHover("units-3d", unitPopupHtml);
+  bindHover("balconies-3d", unitPopupHtml);
   bindHover("osm-campus-3d", (feature) => {
     const letters = feature.properties.blocks || "unlabeled OSM building";
     return `<strong>${feature.properties.label || "Building"}</strong><br>OpenStreetMap footprint<br>Blocks: ${letters}`;
   });
 
   map.on("click", (event) => {
-    const unitHit = map.queryRenderedFeatures(event.point, { layers: ["units-3d"] });
+    const unitHit = map.queryRenderedFeatures(event.point, { layers: ["units-3d", "balconies-3d"] });
     if (unitHit[0]) {
       window.IttinaInventory.selectUnit(unitHit[0].properties.id, true);
       return;

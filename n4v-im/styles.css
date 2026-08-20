@@ -489,7 +489,11 @@ footer {
 }
 
 .swatch.block {
-  background: #d7b07a;
+  background: #f7f4ee;
+  box-shadow: inset 0 0 0 1px #cfc6b8;
+}
+.swatch.balcony {
+  background: #f4c400;
 }
 .swatch.sale {
   background: var(--sale);

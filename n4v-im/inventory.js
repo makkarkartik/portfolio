@@ -8,6 +8,87 @@ const TAGS_API = (() => {
   };
 })();
 const FLOOR_H = 3;
+const STILT_H = 2.6;
+const BALCONY_OUT_M = 1.35;
+const M_PER_DEG = 111320;
+const SIDE_EDGE = { S: 0, E: 1, N: 2, W: 3 };
+
+function toLocal(lng, lat, origin) {
+  const scale = M_PER_DEG * Math.cos((origin[1] * Math.PI) / 180);
+  return [(lng - origin[0]) * scale, (lat - origin[1]) * M_PER_DEG];
+}
+
+function fromLocal(x, y, origin) {
+  const scale = M_PER_DEG * Math.cos((origin[1] * Math.PI) / 180);
+  return [origin[0] + x / scale, origin[1] + y / M_PER_DEG];
+}
+
+function balconyFromSide(ring, side) {
+  if (!ring || ring.length < 4) return null;
+  const origin = ring[0];
+  const pts = [];
+  const last = ring.length - 1;
+  const closed = ring[0][0] === ring[last][0] && ring[0][1] === ring[last][1];
+  const count = closed ? last : ring.length;
+  for (let i = 0; i < count; i += 1) pts.push(toLocal(ring[i][0], ring[i][1], origin));
+  if (pts.length < 4) return null;
+
+  let cx = 0;
+  let cy = 0;
+  pts.forEach((p) => {
+    cx += p[0];
+    cy += p[1];
+  });
+  cx /= pts.length;
+  cy /= pts.length;
+
+  let edgeIndex = SIDE_EDGE[side];
+  if (edgeIndex == null || edgeIndex >= pts.length) {
+    let best = 0;
+    let bestScore = -1;
+    for (let i = 0; i < pts.length; i += 1) {
+      const a = pts[i];
+      const b = pts[(i + 1) % pts.length];
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      const mx = (a[0] + b[0]) / 2;
+      const my = (a[1] + b[1]) / 2;
+      const score = len * Math.hypot(mx - cx, my - cy);
+      if (score > bestScore) {
+        bestScore = score;
+        best = i;
+      }
+    }
+    edgeIndex = best;
+  }
+
+  const a = pts[edgeIndex];
+  const b = pts[(edgeIndex + 1) % pts.length];
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const elen = Math.hypot(dx, dy);
+  if (elen < 1.6) return null;
+  let nx = dy / elen;
+  let ny = -dx / elen;
+  const mx = (a[0] + b[0]) / 2;
+  const my = (a[1] + b[1]) / 2;
+  if (nx * (cx - mx) + ny * (cy - my) > 0) {
+    nx = -nx;
+    ny = -ny;
+  }
+  const inset = Math.min(0.45, elen * 0.1);
+  const ux = dx / elen;
+  const uy = dy / elen;
+  const a2 = [a[0] + ux * inset, a[1] + uy * inset];
+  const b2 = [b[0] - ux * inset, b[1] - uy * inset];
+  const out = BALCONY_OUT_M;
+  return [
+    fromLocal(a2[0], a2[1], origin),
+    fromLocal(b2[0], b2[1], origin),
+    fromLocal(b2[0] + nx * out, b2[1] + ny * out, origin),
+    fromLocal(a2[0] + nx * out, a2[1] + ny * out, origin),
+    fromLocal(a2[0], a2[1], origin),
+  ];
+}
 
 function machineFetch(url, options = {}) {
   const init = { ...options };
@@ -98,11 +179,12 @@ function expandApartments(inventory) {
           wing: slot.wing,
           center: slot.center,
           ring: slot.ring,
+          balconyRing: balconyFromSide(slot.ring, slot.side),
           osmBuildingId: spec.osmBuildingId,
           stack,
           locationLabel: `Brochure cell ${slot.unit} · ${slot.wing} · floor ${floor} · stacked ${stack}`,
-          base: (floor - 1) * FLOOR_H,
-          top: floor * FLOOR_H,
+          base: STILT_H + (floor - 1) * FLOOR_H,
+          top: STILT_H + floor * FLOOR_H,
         });
       });
     }
@@ -496,66 +578,92 @@ window.IttinaInventory = {
   },
 
   buildingFeatures() {
-    const selected = this.selectedBlock;
-    const saleBlocks = this.blocksWithSale();
     return {
       type: "FeatureCollection",
       features: window.ITTINA.osmCampusBuildings.features.map((feat) => {
         const letters = (feat.properties.blocks || "").split(",").filter(Boolean);
-        const isSelected = Boolean(selected && letters.includes(selected));
-        const showUnits = isSelected || letters.some((block) => saleBlocks.has(block));
+        const isTower = letters.length > 0;
         return {
           type: "Feature",
           geometry: feat.geometry,
           properties: {
             ...feat.properties,
-            color: showUnits ? "#c4a06a" : "#d7b07a",
-            height: showUnits ? 0.7 : feat.properties.height,
-            opacity: showUnits ? 0.22 : 0.88,
+            color: isTower ? "#2c2623" : "#e8e0d4",
+            height: isTower ? STILT_H : feat.properties.height,
           },
         };
       }),
     };
   },
 
+  unitColor(apt) {
+    const tag = this.tag(apt.id);
+    if (tag.forSale) return "#2ee59d";
+    if (apt.id === this.selectedId) return "#fff8e8";
+    return "#f7f4ee";
+  },
+
+  balconyColor(apt) {
+    const tag = this.tag(apt.id);
+    if (tag.forSale) return "#1bb87a";
+    if (apt.id === this.selectedId) return "#ffe566";
+    return "#f4c400";
+  },
+
   unitFeatures() {
     const selected = this.selectedBlock;
     const floor = this.selectedFloor || "1";
-    const saleIds = new Set(
-      this.apartments.filter((apt) => this.tag(apt.id).forSale).map((apt) => apt.id)
-    );
-    const visible = this.apartments.filter((apt) => {
+    const labeled = this.apartments.filter((apt) => {
       if (selected && apt.block === selected && String(apt.floor) === String(floor)) return true;
-      if (saleIds.has(apt.id) && apt.block !== selected) return true;
-      return false;
+      return this.tag(apt.id).forSale;
     });
     const polygons = {
       type: "FeatureCollection",
-      features: visible.map((apt) => {
-        const tag = this.tag(apt.id);
-        const isSelected = apt.id === this.selectedId;
-        return {
+      features: [],
+    };
+    this.apartments.forEach((apt) => {
+      const tag = this.tag(apt.id);
+      const isSelected = apt.id === this.selectedId;
+      polygons.features.push({
+        type: "Feature",
+        geometry: { type: "Polygon", coordinates: [apt.ring] },
+        properties: {
+          id: apt.id,
+          name: String(apt.unit),
+          label: apt.id,
+          block: apt.block,
+          floor: apt.floor,
+          kind: "unit",
+          forSale: tag.forSale ? 1 : 0,
+          selected: isSelected ? 1 : 0,
+          color: this.unitColor(apt),
+          base: apt.base,
+          top: apt.top,
+          location: apt.locationLabel,
+          owners: tag.owners || "",
+          pricedAt: tag.pricedAt || "",
+        },
+      });
+      if (apt.balconyRing) {
+        polygons.features.push({
           type: "Feature",
-          geometry: { type: "Polygon", coordinates: [apt.ring] },
+          geometry: { type: "Polygon", coordinates: [apt.balconyRing] },
           properties: {
             id: apt.id,
             name: String(apt.unit),
-            label: apt.id,
-            block: apt.block,
-            floor: apt.floor,
+            kind: "balcony",
             forSale: tag.forSale ? 1 : 0,
             selected: isSelected ? 1 : 0,
-            color: tag.forSale ? "#2ee59d" : isSelected ? "#fff3d6" : "#e8c9a0",
-            location: apt.locationLabel,
-            owners: tag.owners || "",
-            pricedAt: tag.pricedAt || "",
+            color: this.balconyColor(apt),
+            base: apt.base + 0.12,
+            top: apt.top - 0.08,
           },
-        };
-      }),
-    };
+        });
+      }
+    });
     const labels = {
       type: "FeatureCollection",
-      features: visible.map((apt) => ({
+      features: labeled.map((apt) => ({
         type: "Feature",
         geometry: { type: "Point", coordinates: apt.center },
         properties: { id: apt.id, name: String(apt.unit), forSale: this.tag(apt.id).forSale ? 1 : 0 },
