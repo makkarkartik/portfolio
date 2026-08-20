@@ -4,9 +4,10 @@ const GATE_SESSION = "ittina-gate-hash";
 
 const APP_SCRIPTS = [
   "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js",
-  "map-data.js?v=gate2",
-  "inventory.js?v=gate2",
-  "app.js?v=gate2",
+  "map-data.js?v=pc2",
+  "kv-config.js?v=pc2",
+  "inventory.js?v=pc2",
+  "app.js?v=pc2",
 ];
 
 async function sha256Hex(text) {

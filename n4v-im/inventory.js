@@ -9,6 +9,19 @@ const TAGS_API = (() => {
 })();
 const FLOOR_H = 3;
 
+function machineFetch(url, options = {}) {
+  const init = { ...options };
+  try {
+    const host = new URL(url, window.location.href).hostname;
+    if (host === "127.0.0.1" || host === "localhost") {
+      init.targetAddressSpace = "loopback";
+    }
+  } catch {
+    // Relative GitHub Pages URLs stay same-origin.
+  }
+  return fetch(url, init);
+}
+
 function emptyTag() {
   return {
     forSale: false,
@@ -128,50 +141,100 @@ window.IttinaInventory = {
     }
   },
 
-  async load() {
-    try {
-      const res = await fetch(TAGS_API.tags, { cache: "no-store" });
-      if (res.ok) {
-        const remote = await res.json();
-        this.backend = "sqlite";
-        if (remote && typeof remote === "object" && !Array.isArray(remote)) {
-          if (Object.keys(remote).length === 0) {
-            const local = this.localTags();
-            if (Object.keys(local).length) {
-              this.tags = local;
-              await this.flush();
-              return local;
-            }
-          }
-          return remote;
-        }
+  localMachineUrl() {
+    return window.ITTINA_LOCAL_TAGS_URL || "";
+  },
+
+  tagsEndpoint() {
+    return this.localMachineUrl() || TAGS_API.tags;
+  },
+
+  async loadFrom(url, backend) {
+    const res = await machineFetch(url, { cache: "no-store" });
+    if (!res.ok) return null;
+    const remote = await res.json();
+    if (!remote || typeof remote !== "object" || Array.isArray(remote)) return null;
+    this.backend = backend;
+    if (Object.keys(remote).length === 0) {
+      const local = this.localTags();
+      if (Object.keys(local).length) {
+        this.tags = local;
+        await this.flush();
+        return local;
       }
-    } catch {
-      // SQLite API is only available when server.py is running.
+    }
+    return remote;
+  },
+
+  async load() {
+    const urls = [this.localMachineUrl(), TAGS_API.tags].filter(
+      (url, index, list) => url && list.indexOf(url) === index
+    );
+    for (const url of urls) {
+      try {
+        const sqlite = await this.loadFrom(url, "sqlite");
+        if (sqlite) {
+          this.startMachineSync();
+          return sqlite;
+        }
+      } catch {
+        // Relative /api/tags 404s on GitHub Pages; 127.0.0.1 only works when server.py is up.
+      }
     }
     this.backend = "local";
+    this.startMachineSync();
     return this.localTags();
+  },
+
+  startMachineSync() {
+    if (this._syncTimer || !this.localMachineUrl()) return;
+    this._syncTimer = setInterval(() => {
+      this.syncToThisMachine().catch(() => {});
+    }, 4000);
+  },
+
+  async syncToThisMachine() {
+    const url = this.localMachineUrl();
+    if (!url) return;
+    if (this.backend === "sqlite") return;
+    const res = await machineFetch(url, { cache: "no-store" });
+    if (!res.ok) return;
+    const remote = await res.json();
+    if (!remote || typeof remote !== "object" || Array.isArray(remote)) return;
+    this.tags = { ...remote, ...this.tags };
+    this.backend = "sqlite";
+    await this.flush();
+    this.render();
   },
 
   persist() {
     localStorage.setItem(TAG_KEY, JSON.stringify(this.tags));
-    if (this.backend !== "sqlite") return;
     clearTimeout(this._persistTimer);
     this._persistTimer = setTimeout(() => {
-      this.flush().catch(() => {
-        this.backend = "local";
-        this.render();
-      });
+      this.flush()
+        .then(() => {
+          if (this.backend !== "sqlite") {
+            this.backend = "sqlite";
+            this.render();
+          }
+        })
+        .catch(() => {
+          if (this.backend !== "local") {
+            this.backend = "local";
+            this.render();
+          }
+        });
     }, 200);
   },
 
   async flush() {
-    const res = await fetch(TAGS_API.tags, {
+    const res = await machineFetch(this.tagsEndpoint(), {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(this.tags),
     });
     if (!res.ok) throw new Error("Could not save tags");
+    this.backend = "sqlite";
   },
 
   async refreshScanStatus() {
@@ -509,9 +572,10 @@ window.IttinaInventory = {
       `${list.length} shown · ${saleCount} tagged for sale · map greens the unit, not the block`;
     const storage = document.getElementById("storage-status");
     if (storage) {
-      storage.textContent = this.backend === "sqlite"
-        ? "Tags saved in SQLite on the server."
-        : "SQLite server is offline. Tags are only in this browser until you start server.py.";
+      storage.textContent =
+        this.backend === "sqlite"
+          ? "GitHub Pages is saving tags on this computer. Keep python server.py running."
+          : "Allow local network access if Chrome asks, and keep python server.py running.";
     }
     this.renderScanPanel();
     const saleBlocks = this.blocksWithSale();
