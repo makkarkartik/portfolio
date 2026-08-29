@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <title>Kartik Makkar — Senior AI/ML Engineer & Software Architect</title>
-  <meta name="description" content="Senior AI/ML Engineer & Software Architect with 14+ years delivering scalable production systems. Software Architect at Cisco. M.S. CS (AI), Georgia Tech." />
+  <title>Kartik Makkar — Applied AI Research Engineer & Software Architect</title>
+  <meta name="description" content="Applied AI Research Engineer & Software Architect with 14+ years delivering scalable production systems. AI Research Engineer at Cisco — agent evaluation, model selection, cost-performance. M.S. CS (AI), Georgia Tech." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
   <style>
@@ -580,12 +580,14 @@
 <!-- HERO -->
 <header>
   <p class="hero-eyebrow fade-up">San Jose, CA &nbsp;·&nbsp; Open to opportunities</p>
-  <h1 class="fade-up">Senior AI/ML Engineer<br>&amp; <em>Software Architect</em></h1>
+  <h1 class="fade-up">Applied AI Research Engineer<br>&amp; <em>Software Architect</em></h1>
   <p class="hero-summary fade-up">
     14+ years delivering scalable production systems to enterprise customers across
-    collaboration, observability, and healthcare. <strong>Lead architect for enterprise healthcare AI at Cisco.</strong>
-    Deep in fine-tuning, agentic systems, and retrieval — with the architect's craft of
-    translating customer outcomes into engineering deliverables.
+    collaboration, observability, and healthcare. <strong>AI Research Engineer at Cisco</strong> —
+    agent evaluation, model selection, and cost-performance optimization for enterprise AI;
+    previously lead architect for enterprise healthcare AI. Deep in fine-tuning, agentic
+    systems, and retrieval — with the architect's craft of translating customer outcomes
+    into engineering deliverables.
     <strong>M.S. CS (AI), Georgia Tech, Dec 2024.</strong>
   </p>
   <div class="hero-actions fade-up">
@@ -613,28 +615,39 @@
     <div class="projects-list">
 
     <article class="research-card fade-up">
-      <p class="research-title">Conclave — Multi-expert deliberation rooms<br>Round-robin agents that critique until they converge</p>
-      <p class="research-meta">Independent Project &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; FastAPI · LangGraph · React/Vite · BYOK OpenAI / Anthropic / Google</p>
-
-      <img class="project-shot" src="assets/conclave-ui.png?v=4" alt="Conclave UI — experts defining a dog for someone who has never seen one, with deliberation thread and converged solution" width="1600" height="900" loading="lazy" />
+      <p class="research-title">MAKBench — Agent evaluation harness<br>Hermetic, cost-metered, reliability-first</p>
+      <p class="research-meta">Independent Project &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; Docker sandboxes · LiteLLM gateway metering · split-phase grading · generated leaderboard &nbsp;·&nbsp; any CLI agent × any LLM provider</p>
 
       <p class="research-body">
-        A ChatGPT-style workspace where you seat LLM experts, set a topic, and let them
-        <strong>deliberate in round-robin</strong> — streaming thoughts, updating a shared document,
-        and refining a proposal until they converge (or you pause to direct). Built as a maintainable
-        monorepo so desktop packaging later doesn't force a rewrite.
+        Open-source benchmark <strong>infrastructure</strong>: evaluate <strong>any CLI agent against any LLM</strong>
+        on versioned packs of <strong>complex, multi-step enterprise and SWE tasks</strong> — full workflows over
+        mock tool stacks and planted-defect repos, graded on exact outcome artifacts — and get numbers you can
+        defend. Every attempt is <strong>hermetic</strong> — fresh container, fresh workspace, per-attempt
+        budget-capped API key, gateway-only network — so dollars and tokens are <strong>metered at the network
+        edge, never self-reported</strong>, and grading runs in a separate trusted container the agent can never
+        touch. Repeated independent executions per cell turn "can it?" into "does it <em>reliably</em>?" — the
+        consistency and flakiness metrics leaderboards can't compute from one run. Every published number
+        recomputes from raw attempt records.
       </p>
 
+      <a class="results-cta" href="makbench.html">
+        <span class="rc-text"><strong>Results &amp; method</strong> — charts, task prompts, grading, and the Nemotron follow-up.</span>
+        <span class="rc-go">Open page <span class="arrow">→</span></span>
+      </a>
+
       <ul class="research-bullets">
-        <li><strong>Orchestration.</strong> LangGraph room loop with chair turns, lap checks, binding chair direction, and a safety ceiling — convergence only when votes and proposals actually agree.</li>
-        <li><strong>Shared workspace.</strong> Attachments, collaborative markdown doc with live diffs in-thread, and a markdown converged-solution panel that appears only after true convergence.</li>
-        <li><strong>BYOK connectors.</strong> One developer API key per provider (OpenAI / Anthropic / Google) — edit, rename, delete experts and rooms without rewiring the stack.</li>
+        <li><strong>Controlled attempts.</strong> Fresh workspace, same fixture and git baseline, digest-pinned agent images, fixed CPU/memory and wall-clock/step budgets, gateway-only egress.</li>
+        <li><strong>Gateway metering.</strong> Per-attempt budget-capped virtual keys; provider secrets stay on the host; spend and tokens come from the call log (per-token vs flat-rate not mixed in rankings).</li>
+        <li><strong>Split-phase grading.</strong> Agent sandbox and verifier container are separate; workspace is mounted read-only for checks. Tasks fail on a pristine fixture (no-op scores zero).</li>
+        <li><strong>Complex tasks by design.</strong> Task packs are full workflows, not quiz items: multi-step enterprise operations over mock tool stacks (CRM, mail, calendar, ticketing, policy engines) and planted-defect SWE repos. Outcome-graded against hidden weighted checks, with an anti-triviality gate — a no-op agent scores exactly zero. A live demo board and its findings (including why the same model can be reliable on one scaffold and useless on another) are on the results page.</li>
       </ul>
 
       <div class="card-links">
-        <a href="https://github.com/makkarkartik/conclave" class="card-link primary">GitHub ↗</a>
+        <a href="makbench.html" class="card-link primary">View results ↗</a>
+        <a href="https://github.com/makkarkartik/makbench" class="card-link">GitHub ↗</a>
       </div>
     </article>
+
 
     <article class="research-card fade-up">
       <p class="research-title">Domain-Specialized SLM Fine-Tuning — Gemma 12B (bf16 LoRA)<br>for Grounded RAG That Knows When to Refuse</p>
@@ -679,41 +692,56 @@
 
       <div class="card-links">
         <a href="hcft.html" class="card-link primary">View results dashboard ↗</a>
-        <a href="https://github.com/makkarkartik" class="card-link">GitHub ↗</a>
+        <a href="https://github.com/makkarkartik/hcft-sft" class="card-link">GitHub ↗</a>
       </div>
     </article>
 
     <article class="research-card fade-up">
-      <p class="research-title">MAKBench — Agent evaluation harness<br>Hermetic, cost-metered, reliability-first</p>
-      <p class="research-meta">Independent Project &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; Docker sandboxes · LiteLLM gateway metering · split-phase grading · generated leaderboard &nbsp;·&nbsp; any CLI agent × any LLM provider</p>
+      <p class="research-title">Laika — BYOK coding agent for VS Code<br>Chat-first, policy-governed autonomy</p>
+      <p class="research-meta">Independent Project &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; TypeScript · VS Code extension host · React sidebar &nbsp;·&nbsp; in active development</p>
 
       <p class="research-body">
-        Open-source benchmark <strong>infrastructure</strong>: evaluate <strong>any CLI agent against any LLM</strong>
-        on versioned packs of <strong>complex, multi-step enterprise and SWE tasks</strong> — full workflows over
-        mock tool stacks and planted-defect repos, graded on exact outcome artifacts — and get numbers you can
-        defend. Every attempt is <strong>hermetic</strong> — fresh container, fresh workspace, per-attempt
-        budget-capped API key, gateway-only network — so dollars and tokens are <strong>metered at the network
-        edge, never self-reported</strong>, and grading runs in a separate trusted container the agent can never
-        touch. Repeated independent executions per cell turn "can it?" into "does it <em>reliably</em>?" — the
-        consistency and flakiness metrics leaderboards can't compute from one run. Every published number
-        recomputes from raw attempt records.
+        A bring-your-own-key coding agent for VS Code: chat is the product, and <strong>Orbit</strong>
+        is a live 50,000-ft view of the in-flight change set. Built as a <strong>host-agnostic core
+        runtime</strong> (no editor imports), a VS Code extension host, and a React sidebar — so the
+        agent outlives any single editor.
       </p>
 
-      <a class="results-cta" href="makbench.html">
-        <span class="rc-text"><strong>Results &amp; method</strong> — charts, task prompts, grading, and the Nemotron follow-up.</span>
-        <span class="rc-go">Open page <span class="arrow">→</span></span>
-      </a>
-
       <ul class="research-bullets">
-        <li><strong>Controlled attempts.</strong> Fresh workspace, same fixture and git baseline, digest-pinned agent images, fixed CPU/memory and wall-clock/step budgets, gateway-only egress.</li>
-        <li><strong>Gateway metering.</strong> Per-attempt budget-capped virtual keys; provider secrets stay on the host; spend and tokens come from the call log (per-token vs flat-rate not mixed in rankings).</li>
-        <li><strong>Split-phase grading.</strong> Agent sandbox and verifier container are separate; workspace is mounted read-only for checks. Tasks fail on a pristine fixture (no-op scores zero).</li>
-        <li><strong>Complex tasks by design.</strong> Task packs are full workflows, not quiz items: multi-step enterprise operations over mock tool stacks (CRM, mail, calendar, ticketing, policy engines) and planted-defect SWE repos. Outcome-graded against hidden weighted checks, with an anti-triviality gate — a no-op agent scores exactly zero. A live demo board and its findings (including why the same model can be reliable on one scaffold and useless on another) are on the results page.</li>
+        <li><strong>Tiered autonomy.</strong> Manual / guarded / autonomous modes governed by a per-repo policy file — guarded mode auto-allows reads while edits and unknown commands ask once; cancellation is first-click.</li>
+        <li><strong>Provider-agnostic BYOK.</strong> Anthropic or OpenAI keys held in VS Code SecretStorage; model registry with per-user overrides, including context-window overrides.</li>
       </ul>
 
       <div class="card-links">
-        <a href="makbench.html" class="card-link primary">View results ↗</a>
-        <a href="https://github.com/makkarkartik/makbench" class="card-link">GitHub ↗</a>
+        <a href="https://github.com/makkarkartik/laika" class="card-link primary">GitHub ↗</a>
+      </div>
+    </article>
+
+    <article class="research-card fade-up">
+      <p class="research-title">Conclave — Multi-expert deliberation rooms<br>Round-robin agents that critique until they converge</p>
+      <p class="research-meta">Independent Project &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; FastAPI · LangGraph · React/Vite · BYOK OpenAI / Anthropic / Google</p>
+
+      <img class="project-shot" src="assets/conclave-ui.png?v=4" alt="Conclave UI — experts defining a dog for someone who has never seen one, with deliberation thread and converged solution" width="1600" height="900" loading="lazy" />
+
+      <p class="research-body">
+        A ChatGPT-style workspace where you seat LLM experts, set a topic, and let them
+        <strong>deliberate in round-robin</strong> — streaming thoughts, updating a shared document,
+        and refining a proposal until they converge (or you pause to direct). <strong>Every expert
+        first writes its own version from scratch; the room then merges the way developers review
+        a PR</strong> — proposed changes carry reasons, each expert critiques the others' proposals,
+        and the merged changes execute only after true convergence. Built as a maintainable
+        monorepo so desktop packaging later doesn't force a rewrite.
+      </p>
+
+      <ul class="research-bullets">
+        <li><strong>Democratic merging.</strong> Proposed changes carry reasons, every expert critiques them, and execution waits for the room's agreement — a peer-reviewed merge rather than a single model's synthesis.</li>
+        <li><strong>Orchestration.</strong> LangGraph room loop with chair turns, lap checks, binding chair direction, and a safety ceiling — convergence only when votes and proposals actually agree.</li>
+        <li><strong>Shared workspace.</strong> Attachments, collaborative markdown doc with live diffs in-thread, and a markdown converged-solution panel that appears only after true convergence.</li>
+        <li><strong>BYOK connectors.</strong> One developer API key per provider (OpenAI / Anthropic / Google) — edit, rename, delete experts and rooms without rewiring the stack.</li>
+      </ul>
+
+      <div class="card-links">
+        <a href="https://github.com/makkarkartik/conclave" class="card-link primary">GitHub ↗</a>
       </div>
     </article>
 
@@ -736,8 +764,22 @@
 
           <div class="tl-role">
             <div class="tl-role-header">
+              <span class="tl-role-title">AI Research Engineer — Agent Evaluation, Model Selection &amp; Cost Optimization</span>
+              <span class="tl-role-dates">Jul 2026 – Present</span>
+            </div>
+            <p class="tl-role-desc">Technical leadership on an enterprise AI platform team, owning cost, efficiency, and model optimization — evaluating open-source and lower-cost model candidates, and routing / cascading strategies — backed by agent-evaluation infrastructure built end-to-end.</p>
+            <ul class="tl-bullets">
+              <li><strong>Agent evaluation at scale.</strong> Model-agnostic benchmarking of multi-stage LLM agents under live tool-use conditions — fault injection, LLM-as-judge scoring, and per-trial quality / latency / cost telemetry — productionized as a team-scale platform (FastAPI, Postgres-backed job queue, live run monitoring, Superset analytics).</li>
+              <li><strong>Model qualification.</strong> Controlled control-vs-experiment studies qualifying model candidates across short- and long-running task workflows and extended conversations; the evidence base for routing, cascading, and deployment decisions.</li>
+            </ul>
+          </div>
+
+          <hr class="tl-divider" />
+
+          <div class="tl-role">
+            <div class="tl-role-header">
               <span class="tl-role-title">Software Architect — Enterprise Healthcare AI</span>
-              <span class="tl-role-dates">Nov 2024 – Present</span>
+              <span class="tl-role-dates">Nov 2024 – Jun 2026</span>
             </div>
             <p class="tl-role-desc">Lead architect for enterprise AI in a regulated healthcare setting — production systems that turn enterprise documents and application data into governed knowledge, search, chat, and multi-agent analysis. I design domain-agnostic agent platforms so new capabilities ship as declarative skills rather than hand-rolled agent loops.</p>
             <ul class="tl-bullets">
