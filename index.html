@@ -234,6 +234,25 @@
     /* ── SECTION ────────────────────────────────────────── */
     section { padding-top: 72px; }
 
+    /* ── SPLIT LAYOUT: projects + experience side by side ── */
+    .split {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 0 56px;
+      align-items: start;
+    }
+    /* slightly tighter type inside the columns */
+    .split .research-card { padding: 24px 22px; }
+    .split .research-body { font-size: 14px; }
+    .split .research-bullets li { font-size: 13.5px; }
+    .split .metric { padding: 7px 12px; }
+    .split .metric-val { font-size: 16px; }
+    .split .tl-role-desc { font-size: 13px; }
+    .split .tl-bullets li { font-size: 13.5px; }
+    @media (max-width: 980px) {
+      .split { grid-template-columns: 1fr; }
+    }
+
     .section-label {
       font-size: 11px;
       font-weight: 600;
@@ -608,6 +627,8 @@
 
 <main>
 
+  <div class="split">
+
   <!-- PROJECTS -->
   <section id="projects">
     <p class="section-label fade-up">Projects</p>
@@ -868,6 +889,8 @@
 
     </div>
   </section>
+
+  </div><!-- /.split -->
 
   <!-- SKILLS -->
   <section id="skills">
